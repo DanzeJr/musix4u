@@ -36,7 +36,8 @@ const SideBar = () => {
 
 	return (
 		<ul className='Sidebar' css={CSS}>
-			<img src={logo} alt='' />
+			
+			<h6 class="logo"> Musix4U </h6>
 
 			<li className='library'>Library</li>
 
@@ -86,6 +87,14 @@ const CSS = css`
 	height: 100%;
 	background: #000000;
 	padding-top: 20px;
+
+	@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+	.logo{
+		margin-left: 10px;
+		font-family: 'Pacifico', cursive;
+		font-size: 20px;
+	}
 
 	img {
 		height: 60px;
@@ -168,3 +177,10 @@ const CSS = css`
 `;
 
 export default SideBar;
+// <style lang="css">
+// 	@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+// .logo{
+// 	font-family: 'Pacifico', cursive;
+// }
+
+// </style>
