@@ -183,7 +183,7 @@ const Login = () => {
 									return;
 								}
 								const error = await res.json();
-								showMessage(error.length < 50 ? error : 'Error occurs.');
+								showMessage(error.toString().length < 50 ? error.toString() : 'Error occurs.');
 							})
 							.catch((error) => {
 								showMessage('Error occurs.');

@@ -32,10 +32,18 @@ export const initialState = {
 		favorites: [],
 	},
 	volume: DEFAULT_VOLUME,
+	currentUser: {},
+	claims: {}
 };
 
 export const reducer = (state, action) => {
 	switch (action.type) {
+		case 'SET_CLAIMS': {
+			return { ...state, claims: action.claims }
+		}
+		case 'SET_USER': {
+			return { ...state, currentUser: action.user }
+		}
 		case 'LOAD': {
 			return { ...state, loading: action.loading ?? true };
 		}

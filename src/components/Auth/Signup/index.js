@@ -77,7 +77,7 @@ const SignUp = () => {
 									}
 
 									const error = await res.json();
-									showMessage(error.length < 50 ? error : 'Error occurs');
+									showMessage(error);
 								})
 								.catch((error) => {
 									showMessage(
@@ -104,7 +104,10 @@ const SignUp = () => {
 	};
 
 	const showMessage = (message, success, duration, action) => {
-		setIsSubmitting(false);
+		setIsSubmitting(false);		
+		if (!success && typeof message === 'object') {
+			message = 'Error occurs';
+		}
 		enqueueSnackbar(message, {
 			variant: success ? 'success' : 'error',
 			autoHideDuration: duration ?? 3000,
@@ -137,11 +140,11 @@ const SignUp = () => {
 					return;
 				}
 				const error = await res.json();
-				showMessage(error.length < 50 ? error : 'Error occurs');
+				showMessage(error);
 			})
 			.catch((error) => {
 				showMessage(
-					error.toString().length < 50 ? error.toString() : 'Error occurs'
+					error
 				);
 			});
 	};

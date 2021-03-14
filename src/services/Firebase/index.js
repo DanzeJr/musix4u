@@ -13,6 +13,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 export const FirebaseAuth = firebase.auth();
+export const FirebaseMessaging = firebase.messaging();
 export const Firestore = firebase.firestore();
 
 export const EmailProvider = new firebase.auth.EmailAuthProvider();

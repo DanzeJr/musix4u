@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -10,9 +10,14 @@ import IconMenu from '@material-ui/icons/Menu';
 import HeaderSearch from './AppHeaderSearch';
 import HeaderNotifications from './AppHeaderNotifications';
 import HeaderProfile from './AppHeaderProfile';
+import HeaderUpload from './AppHeaderUpload';
+import { useEffect } from 'react';
+import { FirebaseAuth } from './../../services/Firebase/index';
+import { StoreContext } from '../../App';
 
 const AppHeader = ({ onToggleClick }) => {
 	const classes = useStyles();
+	const { state } = useContext(StoreContext);
 
 	return (
 		<AppBar position='static' className={classes.header}>
@@ -26,6 +31,7 @@ const AppHeader = ({ onToggleClick }) => {
 				</IconButton>
 				<HeaderSearch />
 				<div className={classes.actions}>
+					{!!state.claims.userId && <HeaderUpload />}
 					<HeaderNotifications />
 					<HeaderProfile />
 				</div>

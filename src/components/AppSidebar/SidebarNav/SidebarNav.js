@@ -3,21 +3,8 @@ import { makeStyles, createStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
-import IconProfile from '@material-ui/icons/AccountBox'
-import IconAccount from '@material-ui/icons/AccountBalance' //
-import IconAdmin from '@material-ui/icons/VpnKey'
-import IconDashboard from '@material-ui/icons/Dashboard'
-import IconSearch from '@material-ui/icons/Search'
-import IconError from '@material-ui/icons/Error'
-import IconLibraryBooks from '@material-ui/icons/LibraryBooks'
-import IconQuestionAnswer from '@material-ui/icons/QuestionAnswer'
-import IconStars from '@material-ui/icons/Stars'
-import IconNewReleases from '@material-ui/icons/NewReleases'
-import IconSettings from '@material-ui/icons/Settings'
-import IconGroup from '@material-ui/icons/Group'
-import IconPreson from '@material-ui/icons/Person' //
-
 import NavList from './NavList'
+import { LibraryMusic, PlaylistPlay, QueueMusic } from '@material-ui/icons'
 
 const SidebarNav = props => {
   const { isCollapsed } = props
@@ -25,98 +12,30 @@ const SidebarNav = props => {
 
   const itemsCore = [
     {
-      name: 'Dashboard',
+      name: 'Home',
       link: '/',
-      Icon: IconDashboard,
+      Icon: LibraryMusic,
     },
     {
-      name: 'Auth',
-      Icon: IconPreson,
+      name: 'Playlist',
+      Icon: PlaylistPlay,
       items: [
         {
-          name: 'Login',
-          link: '/auth/login',
+          name: 'Favorite',
+          link: '/playlist/fav',
         },
         {
-          name: 'Signup',
-          link: '/auth/signup',
-        },
-        {
-          name: 'Recover',
-          link: '/auth/recover',
-        },
-        {
-          name: 'Reset',
-          link: '/auth/reset',
-        },
+          name: 'My Playlist',
+          link: '/playlist/myplaylist',
+        }
       ],
-    },
-    {
-      name: 'Account',
-      Icon: IconProfile,
-      items: [
-        {
-          name: 'Profile',
-          link: '/profile/me',
-        },
-        {
-          name: 'Organization',
-          link: '/organization',
-        },
-      ],
-    },
-    {
-      name: 'Administration',
-      Icon: IconAdmin,
-      items: [
-        {
-          name: 'All Organizations',
-          link: '/administration/accounts',
-          Icon: IconAccount,
-        },
-        {
-          name: 'All Users',
-          link: '/administration/users',
-          Icon: IconGroup,
-        },
-      ],
-    },
-    {
-      name: 'Error',
-      link: '/error',
-      Icon: IconError,
-    },
-  ]
-
-  const itemsTheme = [
-    {
-      name: 'Supporters',
-      link: '/demo/supporters',
-      Icon: IconStars,
-      IconClassName: classes.iconSupporters,
-    },
-    {
-      name: 'Discuss',
-      link: '/demo/discuss',
-      Icon: IconQuestionAnswer,
-      IconClassName: classes.iconDiscuss,
-    },
+    }
   ]
 
   return (
     <div>
       <List className={classes.navList} disablePadding>
-        <ListSubheader disableSticky={true} className={classes.navListHeader}>
-          Core Modules
-        </ListSubheader>
         <NavList isCollapsed={isCollapsed} items={itemsCore} />
-      </List>
-
-      <List className={classes.navList} disablePadding>
-        <ListSubheader disableSticky={true} className={classes.navListHeader}>
-          Misc
-        </ListSubheader>
-        <NavList isCollapsed={isCollapsed} items={itemsTheme} />
       </List>
     </div>
   )

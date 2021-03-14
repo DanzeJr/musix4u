@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import { Link, useHistory } from 'react-router-dom';
 
@@ -18,13 +18,13 @@ import IconSettings from '@material-ui/icons/Settings';
 import IconLogout from '@material-ui/icons/ExitToApp';
 import { FirebaseAuth } from './../../services/Firebase';
 import { Button } from '@material-ui/core';
+import { StoreContext } from '../../App';
 
 const AppHeaderProfile = () => {
 	const classes = useStyles();
 	const history = useHistory();
+	const { state } = useContext(StoreContext);
 	const [anchorEl, setAnchorEl] = React.useState(null);
-
-	const user = FirebaseAuth.currentUser;
 
 	const handleClick = (event) => {
 		setAnchorEl(event.currentTarget);
@@ -42,7 +42,7 @@ const AppHeaderProfile = () => {
 
 	return (
 		<div>
-			{!user ? (
+			{!state.currentUser ? (
 				<Button
 					component={Link}
 					to='/auth/login'
@@ -62,10 +62,10 @@ const AppHeaderProfile = () => {
 						onClick={handleClick}>
 						<Avatar
 							className={classes.profileAvatar}
-							alt={user.displayName}
-							src={user.photoURL}
+							alt={state.currentUser.displayName}
+							src={state.currentUser.photoURL}
 						/>
-						<span className={classes.profileName}>{user.displayName}</span>
+						<span className={classes.profileName}>{state.currentUser.displayName}</span>
 					</IconButton>
 					<Menu
 						id='simple-menu'
@@ -126,7 +126,7 @@ const useStyles = makeStyles((theme) => ({
 	profileAvatar: {
 		width: 35,
 		height: 35,
-		marginRight: 10,		
+		marginRight: 10,
 		[theme.breakpoints.down('sm')]: {
 			marginRight: 0,
 		},

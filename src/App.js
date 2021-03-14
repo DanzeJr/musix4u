@@ -7,6 +7,8 @@ import theme from './theme';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import Auth from './components/Auth';
 import { initialState, reducer } from './reducers';
+import { useEffect } from 'react';
+import { FirebaseAuth } from './services/Firebase';
 
 export const StoreContext = createContext(null);
 
@@ -15,6 +17,20 @@ export const StoreContext = createContext(null);
  */
 const App = () => {
 	const [state, dispatch] = useReducer(reducer, initialState);
+
+	useEffect(() => {
+		FirebaseAuth.onAuthStateChanged((userAuth) => {
+			dispatch({ type: 'SET_USER', user: userAuth });
+		});
+		FirebaseAuth.onIdTokenChanged(async (user) => {
+			let claims = {};
+			if (user) {
+				const tokenResult = await user.getIdTokenResult(true);
+				claims = tokenResult.claims;
+			}
+			dispatch({ type: 'SET_CLAIMS', claims });
+		});
+	}, []);
 
 	return (
 		<StoreContext.Provider value={{ state, dispatch }}>
