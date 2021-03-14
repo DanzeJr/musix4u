@@ -2,7 +2,7 @@
 /** @jsxImportSource @emotion/react */
 import React, { useState, useRef, useContext } from "react";
 import { css } from "@emotion/react";
-import { StoreContext } from "../Home";
+import { StoreContext } from '../../App';
 import Modal from "../Modal";
 import Toast from "../Toast";
 import logo from "../../logo.svg";

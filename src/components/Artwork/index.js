@@ -1,21 +1,40 @@
-import React from "react";
-import { makeStyles, createStyles } from "@material-ui/core";
+import React from 'react';
+import { makeStyles, Avatar } from '@material-ui/core';
+import clsx from 'clsx';
+import { useContext } from 'react';
+import { StoreContext } from '../../App';
 
-const useStyles = makeStyles((theme) =>
-	createStyles({
-		artwork: (props) => ({
-			width: props.width,
-			height: props.height,
-			backgroundImage: `url(${props.url})`,
-			backgroundSize: "cover!important",
-		}),
-	})
-);
-
+const useStyles = makeStyles((theme) => ({
+	'@keyframes infinite-spin': {
+		from: {
+			transform: 'rotate(0deg)',
+		},
+		to: {
+			transform: 'rotate(360deg)',
+		},
+	},
+	spin: {
+		animation: '$infinite-spin 20s infinite linear',
+	},
+	large: {
+		width: theme.spacing(8),
+		height: theme.spacing(8),
+	},
+}));
 const Artwork = (props) => {
 	const classes = useStyles(props);
+	const { state } = useContext(StoreContext);
 
-	return <div className={classes.artwork} />;
+	return (
+		<Avatar
+			src={
+				props.url ??
+				'https://previews.123rf.com/images/hchjjl/hchjjl1506/hchjjl150608437/41275840-doodle-music-disk.jpg'
+			}
+			className={clsx(classes.large, classes.spin)}
+			style={{ animationPlayState: state.playing ? 'running' : 'paused' }}
+		/>
+	);
 };
 
 export default Artwork;

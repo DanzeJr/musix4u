@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { StoreContext } from '../Home';
+import { StoreContext } from '../../App';
 import { Slider, withStyles } from '@material-ui/core';
 
 const PlaySlider = withStyles({

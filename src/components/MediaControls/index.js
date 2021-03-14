@@ -1,12 +1,21 @@
 import React, { useContext } from "react";
-import { IconButton, makeStyles, createStyles } from "@material-ui/core";
+import {
+	IconButton,
+	makeStyles,
+	createStyles,
+} from "@material-ui/core";
 import PlayCircleOutlineRounded from "@material-ui/icons/PlayCircleOutlineRounded";
 import PauseCircleOutlineRounded from "@material-ui/icons/PauseCircleOutlineRounded";
 import SkipPreviousRounded from "@material-ui/icons/SkipPreviousRounded";
 import Replay10Rounded from "@material-ui/icons/Replay10Rounded";
 import Forward10Rounded from "@material-ui/icons/Forward10Rounded";
 import SkipNextRounded from "@material-ui/icons/SkipNextRounded";
-import { StoreContext } from "../Home";
+import { StoreContext } from '../../App';
+import {
+	RepeatRounded,
+	RepeatOneRounded,
+	ShuffleRounded,
+} from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -33,6 +42,7 @@ const useStyles = makeStyles((theme) =>
 		},
 	})
 );
+
 const MediaControls = () => {
 	const classes = useStyles();
 	const { state, dispatch } = useContext(StoreContext);
@@ -77,8 +87,28 @@ const MediaControls = () => {
 		});
 	};
 
+	const repeat = () => {
+		dispatch({
+			type: "REPEAT",
+		});
+	};
+
+	const shuffle = () => {
+		dispatch({
+			type: "SHUFFLE",
+		});
+	};
+
 	return (
 		<div className={classes.root}>
+			<IconButton
+				color='secondary'
+				size='small'
+				onClick={shuffle}
+				className={classes.hover}
+				title='Shuffle'>
+				<ShuffleRounded color={state.shuffle ? "secondary" : "disabled"} fontSize='large' />
+			</IconButton>
 			<IconButton
 				color='secondary'
 				size='small'
@@ -129,6 +159,18 @@ const MediaControls = () => {
 				className={classes.hover}
 				title='Next'>
 				<SkipNextRounded fontSize='large' />
+			</IconButton>
+			<IconButton
+				color="secondary"
+				size='small'
+				onClick={repeat}
+				className={classes.hover}
+				title='Repeat'>
+				{state.repeat === 1 ? (
+					<RepeatOneRounded fontSize='large' />
+				) : (
+					<RepeatRounded color={state.repeat === 0 ? "disabled" : "secondary"} fontSize='large' />
+				)}
 			</IconButton>
 		</div>
 	);

@@ -3,7 +3,7 @@ const formatTimeSegment = (time) => {
 	return ("0" + Math.floor(time)).slice(-2);
 };
 
-const millisToFormattedTime = (millis, withHours) => {
+export const millisToFormattedTime = (millis, withHours) => {
 	const totalSeconds = Math.floor(millis / 1000);
 	const totalMinutes = Math.floor(totalSeconds / 60);
 	const totalHours = Math.floor(totalMinutes / 60);

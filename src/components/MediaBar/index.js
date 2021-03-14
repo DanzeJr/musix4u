@@ -1,9 +1,9 @@
-import React, { useContext, useCallback } from "react";
-import { makeStyles, createStyles } from "@material-ui/core";
+import React from "react";
+import { makeStyles, createStyles, Hidden } from "@material-ui/core";
 import ProgressSlider from "../ProgressSlider";
 import MediaNowPlaying from "../MediaNowPlaying";
 import MediaControls from "../MediaControls";
-import { StoreContext } from '../Home';
+import MediaAccessories from "../MediaAccessories";
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) =>
 			position: "absolute",
 			bottom: 0,
 			left: 0,
-			background: "#282828",
+			background: theme.palette.primary.light,
 			"z-index": 99,
 			overflow: "hidden",
 			justifyContent: "center",
@@ -56,12 +56,6 @@ const useStyles = makeStyles((theme) =>
 const MediaBar = () => {
 	const classes = useStyles();
 
-	const { state, dispatch } = useContext(StoreContext);
-
-	const setVolume = useCallback((e) =>
-		dispatch({ type: "SET_VOLUME", volume: e.target.value })
-	);
-
 	return (
 		<div className={classes.root}>
 			<ProgressSlider />
@@ -73,6 +67,12 @@ const MediaBar = () => {
 					className={`${classes.controlsContainer} ${classes.verticallyCenter}`}>
 					<MediaControls />
 				</div>
+				<Hidden xsDown>
+					<div
+						className={`${classes.end} ${classes.mediaItem} ${classes.verticallyCenter}`}>
+						<MediaAccessories />
+					</div>
+				</Hidden>
 			</div>
 		</div>
 	);

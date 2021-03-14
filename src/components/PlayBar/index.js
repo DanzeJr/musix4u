@@ -2,7 +2,7 @@
 /** @jsxImportSource @emotion/react */
 import React, { useContext, useCallback } from "react";
 import { css } from "@emotion/react";
-import { StoreContext } from "../Home";
+import { StoreContext } from '../../App';
 
 const formatTime = (inputSeconds) => {
 	let seconds = Math.floor(inputSeconds % 60);
