@@ -28,8 +28,7 @@ const Artwork = (props) => {
 	return (
 		<Avatar
 			src={
-				props.url ??
-				'https://previews.123rf.com/images/hchjjl/hchjjl1506/hchjjl150608437/41275840-doodle-music-disk.jpg'
+				props.url ?? '/vinyl.jpg'
 			}
 			className={clsx(classes.large, classes.spin)}
 			style={{ animationPlayState: state.playing ? 'running' : 'paused' }}

@@ -9,6 +9,7 @@ import Auth from './components/Auth';
 import { initialState, reducer } from './reducers';
 import { useEffect } from 'react';
 import { FirebaseAuth } from './services/Firebase';
+import { Redirect } from 'react-router-dom';
 
 export const StoreContext = createContext(null);
 
@@ -25,7 +26,7 @@ const App = () => {
 		FirebaseAuth.onIdTokenChanged(async (user) => {
 			let claims = {};
 			if (user) {
-				const tokenResult = await user.getIdTokenResult(true);
+				const tokenResult = await user.getIdTokenResult();
 				claims = tokenResult.claims;
 			}
 			dispatch({ type: 'SET_CLAIMS', claims });
@@ -38,9 +39,12 @@ const App = () => {
 				<CssBaseline />
 				<BrowserRouter>
 					<Switch>
-						{/* <Route exact path="/" render={() => <Redirect to="/sales/dashboard" />} /> */}
-						<Route exact path='/' component={Home} />
 						<Route path='/auth' component={Auth} />
+						<Route exact path='/' component={Home} />				
+						<Route path='/playlists/home' component={Home} />					
+						<Route path='/playlists/fav' component={Home} />				
+						<Route path='/playlists/:id(\\d+)' component={Home} />								
+						<Route path='/playlists' component={Home} />
 					</Switch>
 				</BrowserRouter>
 			</ThemeProvider>

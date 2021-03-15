@@ -1,29 +1,22 @@
 
-export const getTracks = (state, media) => {	
-	let i = 0;
+export const getTracks = (state, media) => {
 	return {
 		...state,
 		fetching: false,
-		media: media,
-		playlists: {
-			...state.playlists,
-			home: media.map((x) => ({ index: i++, id: x.id })),
-		},
+		currentPlaylist: media.map((song, index) => ({ ...song, index }))
 	};
 };
-export const play = (state, song, index) => {
-	if (state.playlists[state.currentPlaylist].length === 0) {
+export const play = (state, song) => {
+	if (state.currentPlaylist.length === 0) {
 		return state;
 	}
-	if (!song && !state.currentSong.id) {
-		song = state.playlists[state.currentPlaylist][state.currentIndex];
-		song = state.media.find((x) => x.id === song.id);
+	if (!song) {
+		song =state.currentPlaylist[state.currentSong.index];
 	}
 	return {
 		...state,
 		playing: true,
-		currentSong: song || state.currentSong,
-		currentIndex: index !== undefined ? index : state.currentIndex,
+		currentSong: song || state.currentSong
 	};
 };
 
@@ -59,25 +52,24 @@ const random = (lower, upper) => {
  * @returns PlayerState
  */
 export const next = (state) => {	
-	if (state.playlists[state.currentPlaylist].length === 0) {
+	const length = state.currentPlaylist.length;
+	if (length === 0) {
 		return state;
 	}
 	let index;
-	const length = state.playlists[state.currentPlaylist].length;
 	if (state.shuffle) {
 		do {
 			index = random(0, length - 1);
-		} while (index === state.currentIndex);
+		} while (index === state.currentSong.index);
 	} else {
-		if (state.currentIndex < length - 1) {
-			index = state.currentIndex + 1;
+		if (state.currentSong.index < length - 1) {
+			index = state.currentSong.index + 1;
 		} else {
 			index = 0;
 		}
 	}
 
-	let song = state.playlists[state.currentPlaylist][index];
-	song = state.media.find((x) => x.id === song.id);
+	let song =state.currentPlaylist[index];
 	return play(state, song, index);
 };
 
@@ -88,25 +80,24 @@ export const next = (state) => {
  * @returns PlayerState
  */
 export const prev = (state) => {	
-	if (state.playlists[state.currentPlaylist].length === 0) {
+	const length = state.currentPlaylist.length;
+	if (length === 0) {
 		return state;
 	}
 	let index;
-	const length = state.playlists[state.currentPlaylist].length;
 	if (state.shuffle) {
 		do {
 			index = random(0, length - 1);
-		} while (index === state.currentIndex);
+		} while (index === state.currentSong.index);
 	} else {
-		if (state.currentIndex > 0) {
-			index = state.currentIndex - 1;
+		if (state.currentSong.index > 0) {
+			index = state.currentSong.index - 1;
 		} else {
 			index = length - 1;
 		}
 	}
 
-	let song = state.playlists[state.currentPlaylist][index];
-	song = state.media.find((x) => x.id === song.id);
+	let song =state.currentPlaylist[index];
 	return play(state, song, index);
 };
 

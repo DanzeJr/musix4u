@@ -63,7 +63,7 @@ const AppHeaderProfile = () => {
 						<Avatar
 							className={classes.profileAvatar}
 							alt={state.currentUser.displayName}
-							src={state.currentUser.photoURL}
+							src={state.currentUser.photoURL ?? '/avatar.jpg'}
 						/>
 						<span className={classes.profileName}>{state.currentUser.displayName}</span>
 					</IconButton>

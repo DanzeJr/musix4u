@@ -167,6 +167,7 @@ const Login = () => {
 					if (!!idTokenResult.claims.userId) {
 						history.push('/');
 					} else {
+						showMessage("Creating user...", true)
 						fetch(`${process.env.REACT_APP_API_URL}api/users`, {
 							method: 'POST',
 							headers: {

@@ -61,8 +61,7 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundImage:
-			'url(https://i.pinimg.com/originals/e3/f4/1d/e3f41d468eb3cd48b5e3455529cdafdb.jpg)',
+		backgroundImage: 'url(/bg.jpg)',
 		backgroundSize: 'cover',
 		backgroundPosition: 'right',
 		backgroundRepeat: 'no-repeat',

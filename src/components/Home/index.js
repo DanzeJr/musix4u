@@ -1,7 +1,5 @@
 import React, {
-	createContext,
 	useEffect,
-	useReducer,
 	useRef,
 	useState,
 } from 'react';
@@ -26,17 +24,6 @@ const Home = () => {
 			audioRef.current.play();
 		} else audioRef.current.pause();
 	}, [state.playing, state.currentSong, state.seekingTime]);
-
-	const getTracks = async () => {
-		dispatch({ type: 'FETCH' });
-		let response = await fetch(`${process.env.REACT_APP_API_URL}api/tracks`);
-		let data = await response.json();
-		dispatch({ type: 'GET', media: data });
-	};
-
-	useEffect(() => {
-		getTracks();
-	}, []);
 
 	useEffect(() => {
 		if (audioRef.current.ended) {
@@ -156,7 +143,8 @@ const Home = () => {
 				<main
 					className={classes.mainContainer}
 					style={{
-						paddingTop: headerHeight, // || headerSize.height,
+						paddingTop: headerHeight,
+						paddingBottom: 80 // || headerSize.height,
 					}}>
 					<div className={classes.contentContainer}>
 						<Content />
@@ -250,6 +238,7 @@ const useStyles = makeStyles((theme) => ({
 	contentContainer: {
 		display: 'flex',
 		position: 'relative',
+		backgroundColor: theme.palette.primary.dark,
 		flex: 1,
 	},
 	footerContainer: {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -20,9 +20,11 @@ import {
 } from '@material-ui/core';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { StoreContext } from './../../App';
 
 const AppHeaderUpload = () => {
 	const classes = useStyles();
+	const { state, dispatch } = useContext(StoreContext);
 	const [open, setOpen] = React.useState(false);
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -40,7 +42,7 @@ const AppHeaderUpload = () => {
 				const type = value[0].type;
 				return (
 					!!value &&
-					(type === 'audio/mp3' ||
+					(type === 'audio/mpeg' ||
 						type === 'audio/flac' ||
 						type === 'audio/x-m4a')
 				);
@@ -76,20 +78,31 @@ const AppHeaderUpload = () => {
 		setOpen(false);
 	};
 
-	const onSubmit = (data, e) => {
+	const onSubmit = async (data, e) => {
 		setIsSubmitting(true);
 		const formData = new FormData(e.target);
+		const token = await state.currentUser
+			.getIdToken(true)
+			.catch((error) => {
+				showMessage(error.message);
+			});
 		fetch(`${process.env.REACT_APP_API_URL}api/tracks`, {
 			method: 'POST',
 			headers: {
 				Accept: 'application/json',
+				Authorization: `Bearer ${token}`,
 			},
 			body: formData,
 		})
 			.then(async (res) => {
 				if (res.status === 201) {
 					setIsSubmitting(false);
-					showMessage(`Upload new song ${data.song[0].name} successfully!`);
+					const song = await res.json();
+					dispatch({ type: 'UPLOAD', song });
+					showMessage(
+						`Upload new song ${data.song[0].name} successfully!`,
+						true
+					);
 					reset();
 					return;
 				}

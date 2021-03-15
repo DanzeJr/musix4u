@@ -1,8 +1,6 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
+import queryString from 'query-string';
 import { StoreContext } from '../../App';
-
-import Modal from '../Modal';
-import Toast from '../Toast';
 import { millisToFormattedTime } from '../../utils/time.util';
 import { useLoading, Audio, Bars } from '@agney/react-loading';
 import {
@@ -18,6 +16,11 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
 import { Add, FavoriteBorder, Pause, PlayArrow } from '@material-ui/icons';
+import { useParams } from 'react-router';
+import { useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
+import { FirebaseAuth } from './../../services/Firebase/index';
 
 const StyledTableCell = withStyles((theme) => ({
 	head: {
@@ -55,10 +58,11 @@ const useStyles = makeStyles((theme) => ({
 
 const Content = () => {
 	const classes = useStyles();
+	const history = useHistory();
+	const { id } = useParams();
 	const { state, dispatch } = useContext(StoreContext);
-
-	const [toast, setToast] = useState('');
-	const [playlistSelect, setPlayListSelect] = useState('');
+	const [songs, setSongs] = useState([]);
+	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 	const [playVisibleId, setPlayVisibleId] = useState(false);
 	const { containerProps, indicatorEl } = useLoading({
 		loading: true,
@@ -73,16 +77,63 @@ const Content = () => {
 		indicator: <Bars width='50' />,
 	});
 
-	const currentPlaylist = state.currentPlaylist;
+	const showMessage = (message, success, duration, action) => {
+		if (!success && typeof message === 'object') {
+			message = 'Error occurs';
+		}
+		enqueueSnackbar(message, {
+			anchorOrigin: {
+				vertical: 'top',
+				horizontal: 'center',
+			},
+			variant: success ? 'success' : 'error',
+			autoHideDuration: duration ?? 3000,
+			onClick: action ?? closeSnackbar(),
+		});
+	};
 
-	const playlists = Object.keys(state.playlists).filter(
-		(list) => !['home', 'favorites'].includes(list)
-	);
-	const songs = Array.from(state.playlists[currentPlaylist]);
+	const getTracks = async (filter) => {
+		dispatch({ type: 'FETCH' });
+		let headers  = {
+			Accept: 'application/json',
+		};
+		if (state.currentUser?.uid) {
+			const token = await state.currentUser.getIdToken(true).catch((error) => {
+				showMessage(error.message);
+			});
+			headers['Authorization'] = `Bearer ${token}`;
+		}
+		let response = await fetch(
+			`${process.env.REACT_APP_API_URL}api/tracks?${queryString.stringify(
+				filter
+			)}`,
+			{
+				method: 'GET',
+				headers: headers
+			}
+		);
+		let data = await response.json();
+		dispatch({ type: 'GET', media: data });
+	};
 
-	const handleSelect = useCallback((e) => {
-		setPlayListSelect(e.target.value);
-	});
+	useEffect(() => {
+		let filter = {};
+		if (!!id) {
+			if (id === 'fav') {
+				filter = { favorite: true };
+			} else if (state.playlists.has(id)) {
+				filter = { playlistId: id };
+			} else {
+				history.push('/');
+				return;
+			}
+		}
+		getTracks(filter);
+	}, [id, state.currentUser]);
+
+	useEffect(() => {
+		setSongs(state.currentPlaylist);
+	}, [state.currentPlaylist])
 
 	const playOrPause = (song, index) => {
 		if (state.currentSong.id === song.id && state.playing) {
@@ -115,30 +166,25 @@ const Content = () => {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{songs.map(({ index, id }) => {
-								const song = state.media.find((x) => x.id == id);
-								const isFavorite = state.playlists.favorites.some(
-									(x) => x.id == id
-								);
+							{songs.map((song) => {
 
 								return (
 									<StyledTableRow
-										key={id}
-										onMouseEnter={() => setPlayVisibleId(id)}
+										key={song.id}
+										onMouseEnter={() => setPlayVisibleId(song.id)}
 										onMouseLeave={() => setPlayVisibleId('')}
-										onClick={() => playOrPause(song, index)}>
+										onClick={() => playOrPause(song)}>
 										<StyledTableCell component='th' scope='row'>
 											<PlayPause
 												playing={state.playing}
 												song={song}
-												index={index}
-												isCurrentSong={state.currentSong.id === id}
-												visible={playVisibleId === id}
+												isCurrentSong={state.currentSong.id === song.id}
+												visible={playVisibleId === song.id}
 											/>
 
 											<span style={{ marginRight: 10 }} />
 
-											<Favorite isFavorite={isFavorite} songId={id} />
+											<Favorite isFavorite={song.isFavorite} songId={song.id} />
 
 											<span style={{ marginRight: 10 }} />
 
@@ -159,72 +205,6 @@ const Content = () => {
 					</Table>
 				</TableContainer>
 			)}
-
-			<Modal
-				show={state.addToPlaylistId}
-				close={() => {
-					dispatch({ type: 'ABORT_ADD_TO_PLAYLIST' });
-				}}>
-				<div style={{ textAlign: 'center' }}>
-					<div style={{ fontSize: 18, marginBottom: 20 }}>Add To Playlist</div>
-
-					{playlists.length < 1 ? (
-						<div>
-							<p>
-								You don't have any custom playlists yet. Start by creating one
-								in the sidebar menu!
-							</p>
-
-							<div style={{ marginTop: 15 }}>
-								<button>Ok</button>
-							</div>
-						</div>
-					) : (
-						<>
-							<select
-								value={playlistSelect}
-								onChange={handleSelect}
-								style={{
-									fontSize: 16,
-									textTransform: 'capitalize',
-									width: 115,
-									height: 25,
-								}}>
-								<option value=''>Choose</option>
-
-								{playlists.map((list) => (
-									<option
-										key={list}
-										value={list}
-										disabled={state.playlists[list].has(state.addToPlaylistId)}>
-										{list}
-									</option>
-								))}
-							</select>
-
-							<div style={{ marginTop: 20 }}>
-								<button
-									onClick={() => {
-										if (playlistSelect === '') return;
-
-										dispatch({
-											type: 'SAVE_TO_PLAYLIST',
-											playlist: playlistSelect,
-										});
-
-										setToast('Successfully added to your playlist.');
-
-										setPlayListSelect('');
-									}}>
-									Save
-								</button>
-							</div>
-						</>
-					)}
-				</div>
-			</Modal>
-
-			<Toast toast={toast} close={() => setToast('')} />
 		</div>
 	);
 };
@@ -268,7 +248,7 @@ const Favorite = ({ isFavorite, songId }) => {
 	);
 };
 
-const PlayPause = ({ playing, song, index, isCurrentSong, visible }) => {
+const PlayPause = ({ playing, song, isCurrentSong, visible }) => {
 	const { dispatch } = useContext(StoreContext);
 	const style = { visibility: isCurrentSong || visible ? 'visible' : 'hidden' };
 	const { containerProps, indicatorEl } = useLoading({
@@ -294,7 +274,7 @@ const PlayPause = ({ playing, song, index, isCurrentSong, visible }) => {
 			<IconButton
 				size='small'
 				style={style}
-				onClick={() => dispatch({ type: 'PLAY', song, index })}>
+				onClick={() => dispatch({ type: 'PLAY', song })}>
 				<PlayArrow />
 			</IconButton>
 		);
