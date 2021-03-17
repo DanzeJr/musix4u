@@ -53,7 +53,7 @@ export const reducer = (state, action) => {
 			return {
 				...state,
 				currentUser: action.user,
-				displayName: action.user.displayName,
+				displayName: action.user?.displayName,
 			};
 		}
 		case 'LOAD': {
@@ -74,11 +74,41 @@ export const reducer = (state, action) => {
 		case 'SET_CURRENT_PLAYLIST': {
 			return { ...state, currentPlaylistId: action.id };
 		}
-		case 'ADD_PLAYLIST':
+		case 'ADD_PLAYLIST': {
+			if (action.playlist.isPublic) {
+				state.sharedPlaylists.push(action.playlist);
+			}
 			return {
 				...state,
 				playlists: [...state.playlists, action.playlist],
+				sharedPlaylists: [...state.sharedPlaylists]
 			};
+		}
+			
+		case 'UPDATE_PLAYLIST': {
+			let index = state.playlists.findIndex((x) => x.id == action.playlist.id);
+			state.playlists[index] = action.playlist;
+			index = state.sharedPlaylists.findIndex(
+				(x) => x.id == action.playlist.id
+			);
+			if (index >= 0) {
+				state.sharedPlaylists[index] = action.playlist;
+			}
+			return {
+				...state,
+				playlists: [...state.playlists],
+				sharedPlaylists: [...state.sharedPlaylists],
+			};
+		}
+		case 'DELETE_PLAYLIST': {
+			state.playlists = state.playlists.filter((x) => x.id != action.id);
+			state.sharedPlaylists = state.sharedPlaylists.filter((x) => x.id != action.id);
+			return {
+				...state,
+				playlists: [...state.playlists],
+				sharedPlaylists: [...state.sharedPlaylists],
+			};
+		}
 		case 'ADD_TO_PLAYLIST': {
 			return addToPlaylist(state, action.song);
 		}

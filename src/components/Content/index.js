@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import * as yup from 'yup';
 import queryString from 'query-string';
 import { StoreContext } from '../../App';
 import { millisToFormattedTime } from '../../utils/time.util';
@@ -44,6 +45,7 @@ import {
 	CancelRounded,
 	DeleteRounded,
 	DeleteForeverRounded,
+	Delete,
 } from '@material-ui/icons';
 import { useParams } from 'react-router';
 import { useEffect } from 'react';
@@ -51,6 +53,7 @@ import { useHistory } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { Controller, useForm } from 'react-hook-form';
 import { green } from '@material-ui/core/colors';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 const StyledTableCell = withStyles((theme) => ({
 	head: {
@@ -230,7 +233,14 @@ const Content = () => {
 						<TableHead>
 							<TableRow>
 								<StyledTableCell align='left'>
-									Total: {state.currentPlaylist.length}
+									{!isNaN(state.currentPlaylistId) &&
+									state.playlists.some(
+										(x) => x.id == state.currentPlaylistId
+									) ? (
+										<PlaylistOption />
+									) : (
+										<h4>Total: {state.currentPlaylist.length}</h4>
+									)}
 								</StyledTableCell>
 								<StyledTableCell align='left'>Title</StyledTableCell>
 								<StyledTableCell align='left'>Artists</StyledTableCell>
@@ -302,6 +312,9 @@ const AddToPlaylist = ({ song }) => {
 
 	const handleClick = (event) => {
 		event.stopPropagation();
+		if (state.playlists.length === 0) {
+			return;
+		}
 		setAnchorEl(event.currentTarget);
 	};
 
@@ -396,6 +409,245 @@ const AddToPlaylist = ({ song }) => {
 	);
 };
 
+const PlaylistOption = () => {
+	const history = useHistory();
+	const classes = useChildStyle();
+	const { state, dispatch } = useContext(StoreContext);
+	const [open, setOpen] = React.useState(false);
+	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+	const [anchorEl, setAnchorEl] = React.useState(null);
+
+	let playlist = state.playlists.find((x) => x.id == state.currentPlaylistId);
+	const schema = yup.object().shape({
+		name: yup
+			.mixed()
+			.required('Please enter playlist name')
+			.test(
+				'maxLength',
+				'Must be less than or equal to 50 characters',
+				(value) => {
+					return value && value.toString().length <= 50;
+				}
+			),
+	});
+
+	const { register, handleSubmit, errors, reset, control } = useForm({
+		mode: 'onChange',
+		reValidateMode: 'onChange',
+		resolver: yupResolver(schema),
+		defaultValues: {
+			name: playlist.name,
+			isPublic: playlist.isPublic,
+		},
+	});
+
+	const handleClick = (event) => {
+		event.stopPropagation();
+		setAnchorEl(event.currentTarget);
+	};
+
+	const handleClose = async (e, mode) => {
+		e.stopPropagation();
+		if (mode === 0) {
+			setOpen(true);
+		} else {
+			const token = await state.currentUser.getIdToken(true).catch((error) => {
+				showMessage(error.message);
+			});
+			fetch(
+				`${process.env.REACT_APP_API_URL}api/playlists/${state.currentPlaylistId}`,
+				{
+					method: 'DELETE',
+					headers: {
+						Accept: 'application/json',
+						'Content-Type': 'application/json;charset=UTF-8',
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then(async (res) => {
+					if (res.status === 200) {
+						dispatch({ type: 'DELETE_PLAYLIST', id: playlist.id });
+						showMessage(`Remove ${playlist.name} successfully!`, true);
+						history.push('/');
+						return;
+					}
+					const error = await res.json();
+					showMessage(error);
+				})
+				.catch((error) => {
+					showMessage(error.message);
+				});
+		}
+		setAnchorEl(null);
+	};
+
+	const showMessage = (message, success, duration) => {
+		setIsSubmitting(false);
+		if (!success && typeof message === 'object') {
+			message = 'Error occurs';
+		}
+		enqueueSnackbar(message, {
+			anchorOrigin: {
+				vertical: 'top',
+				horizontal: 'center',
+			},
+			variant: success ? 'success' : 'error',
+			autoHideDuration: duration === undefined ? 3000 : duration,
+			action: (key) => (
+				<IconButton onClick={() => closeSnackbar(key)}>
+					<CloseRounded />
+				</IconButton>
+			),
+		});
+	};
+
+	const onSubmit = async (data) => {
+		setIsSubmitting(true);
+		const token = await state.currentUser.getIdToken(true).catch((error) => {
+			showMessage(error.message);
+		});
+		fetch(`${process.env.REACT_APP_API_URL}api/playlists/${playlist.id}`, {
+			method: 'PUT',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json;charset=UTF-8',
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(data),
+		})
+			.then(async (res) => {
+				if (res.status === 200) {
+					setIsSubmitting(false);
+					const playlist = await res.json();
+					dispatch({ type: 'UPDATE_PLAYLIST', playlist });
+					showMessage(`Updated playlist ${playlist.name}!`, true);
+					setOpen(false);
+					return;
+				}
+				const error = await res.json();
+				showMessage(error);
+			})
+			.catch((error) => {
+				showMessage(error.message);
+			});
+	};
+
+	return (
+		<>
+			<span>Total: {state.currentPlaylist.length}</span>
+			<IconButton
+				aria-controls='simple-menu'
+				aria-haspopup='true'
+				className={classes.button}
+				size='small'
+				onClick={handleClick}
+				disabled={isSubmitting}>
+				<MoreVertRounded />
+			</IconButton>
+			<Menu
+				id='simple-menu'
+				anchorEl={anchorEl}
+				keepMounted
+				open={Boolean(anchorEl)}
+				onClose={handleClose}>
+				<MenuItem key={0} onClick={(e) => handleClose(e, 0)}>
+					<ListItemIcon>
+						<EditRounded fontSize='small' />
+					</ListItemIcon>
+					<ListItemText primary='Edit playlist' />
+				</MenuItem>
+				<MenuItem key={1} onClick={(e) => handleClose(e, 1)}>
+					<ListItemIcon>
+						<DeleteForeverRounded fontSize='small' color='error' />
+					</ListItemIcon>
+					<ListItemText
+						primary='Delete playlist'
+					/>
+				</MenuItem>
+			</Menu>
+			<Dialog
+				onClick={(e) => e.stopPropagation()}
+				open={open}
+				onClose={() => setOpen(false)}
+				aria-labelledby='form-dialog-title'
+				disableBackdropClick
+				disableEscapeKeyDown>
+				<div className={classes.titleContainer}>
+					<h2 style={{ marginLeft: 20 }}>Edit Playlist</h2>
+					<IconButton
+						edge='start'
+						color='inherit'
+						aria-label='Cancel'
+						className={classes.cancel}
+						title='Cancel Edit'
+						onClick={(e) => {
+							e.stopPropagation();
+							setOpen(false);
+						}}>
+						<CancelRounded fontSize='large' />
+					</IconButton>
+				</div>
+				<form onSubmit={handleSubmit(onSubmit)} noValidate>
+					<DialogContent>
+						<TextField
+							margin='dense'
+							id='name'
+							name='name'
+							label='Name'
+							variant='outlined'
+							fullWidth
+							inputRef={register}
+							error={!!errors.name}
+							helperText={errors.name && errors.name.message}
+						/>
+						<FormControlLabel
+							control={
+								<Controller
+									control={control}
+									name='isPublic'
+									render={(
+										{ onChange, onBlur, value, name, ref },
+										{ invalid, isTouched, isDirty }
+									) => (
+										<Checkbox
+											onBlur={onBlur}
+											onChange={(e) => onChange(e.target.checked)}
+											checked={value}
+											inputRef={ref}
+										/>
+									)}
+								/>
+							}
+							label='Public Playlist'
+						/>
+					</DialogContent>
+					<DialogActions>
+						<Button
+							type='submit'
+							variant='contained'
+							onClick={(e) => e.stopPropagation()}
+							startIcon={
+								isSubmitting ? (
+									<CircularProgress
+										size={24}
+										className={classes.buttonProgress}
+									/>
+								) : (
+									<EditRounded />
+								)
+							}
+							disabled={isSubmitting}>
+							Update
+						</Button>
+					</DialogActions>
+				</form>
+			</Dialog>
+		</>
+	);
+};
+
 const TrackOption = ({ song }) => {
 	const classes = useChildStyle();
 	const { state, dispatch } = useContext(StoreContext);
@@ -426,14 +678,17 @@ const TrackOption = ({ song }) => {
 				showMessage(error.message);
 			});
 			if (state.currentPlaylistId == 'fav') {
-				fetch(`${process.env.REACT_APP_API_URL}api/tracks/${song.id}/favorites`, {
-					method: 'DELETE',
-					headers: {
-						Accept: 'application/json',
-						'Content-Type': 'application/json;charset=UTF-8',
-						Authorization: `Bearer ${token}`,
-					},
-				})
+				fetch(
+					`${process.env.REACT_APP_API_URL}api/tracks/${song.id}/favorites`,
+					{
+						method: 'DELETE',
+						headers: {
+							Accept: 'application/json',
+							'Content-Type': 'application/json;charset=UTF-8',
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				)
 					.then(async (res) => {
 						if (res.status === 200) {
 							dispatch({ type: 'REMOVE_FAV', id: song.id });
@@ -468,14 +723,17 @@ const TrackOption = ({ song }) => {
 						showMessage(error.message);
 					});
 			} else {
-				fetch(`${process.env.REACT_APP_API_URL}api/playlists/${state.currentPlaylistId}/tracks/${song.id}`, {
-					method: 'DELETE',
-					headers: {
-						Accept: 'application/json',
-						'Content-Type': 'application/json;charset=UTF-8',
-						Authorization: `Bearer ${token}`,
-					},
-				})
+				fetch(
+					`${process.env.REACT_APP_API_URL}api/playlists/${state.currentPlaylistId}/tracks/${song.id}`,
+					{
+						method: 'DELETE',
+						headers: {
+							Accept: 'application/json',
+							'Content-Type': 'application/json;charset=UTF-8',
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				)
 					.then(async (res) => {
 						if (res.status === 200) {
 							dispatch({ type: 'REMOVE_TRACK', id: song.id });
