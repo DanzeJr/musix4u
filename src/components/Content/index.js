@@ -451,7 +451,7 @@ const PlaylistOption = () => {
 		e.stopPropagation();
 		if (mode === 0) {
 			setOpen(true);
-		} else {
+		} else if (mode == 1) {
 			const token = await state.currentUser.getIdToken(true).catch((error) => {
 				showMessage(error.message);
 			});
@@ -673,7 +673,7 @@ const TrackOption = ({ song }) => {
 		e.stopPropagation();
 		if (mode === 0) {
 			setOpen(true);
-		} else {
+		} else if (mode === 1) {
 			const token = await state.currentUser.getIdToken(true).catch((error) => {
 				showMessage(error.message);
 			});
@@ -857,7 +857,7 @@ const TrackOption = ({ song }) => {
 				disableBackdropClick
 				disableEscapeKeyDown>
 				<div className={classes.titleContainer}>
-					<h2 style={{ marginLeft: 20 }}>Upload song</h2>
+					<h2 style={{ marginLeft: 20 }}>Edit song</h2>
 					<IconButton
 						edge='start'
 						color='inherit'
@@ -940,7 +940,7 @@ const TrackOption = ({ song }) => {
 								)
 							}
 							disabled={isSubmitting}>
-							Upload
+							Update
 						</Button>
 					</DialogActions>
 				</form>
