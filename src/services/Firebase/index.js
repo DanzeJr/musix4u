@@ -17,6 +17,8 @@ export const FirebaseAuth = firebase.auth();
 export const FirebaseMessaging = firebase.messaging();
 export const Firestore = firebase.firestore();
 
+export const FirebasePersistence = firebase.auth.Auth.Persistence;
+
 export const EmailProvider = new firebase.auth.EmailAuthProvider();
 export const GoogleProvider = new firebase.auth.GoogleAuthProvider();
 export const FacebookProvider = new firebase.auth.FacebookAuthProvider();

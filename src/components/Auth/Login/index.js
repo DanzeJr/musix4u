@@ -20,6 +20,7 @@ import { useForm, Controller } from 'react-hook-form';
 import AuthHeader from '../AuthHeader';
 import AuthContent from '../AuthContent';
 import {
+	FirebasePersistence,
 	FirebaseAuth,
 	GoogleProvider,
 	FacebookProvider,
@@ -41,13 +42,7 @@ const Login = () => {
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 	const [login, setLogin] = useState({});
 	const [open, setOpen] = useState(false);
-	const {
-		register,
-		handleSubmit,
-		errors,
-		control,
-		reset,
-	} = useForm({
+	const { register, handleSubmit, errors, control, reset } = useForm({
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 		defaultValues: {
@@ -169,7 +164,7 @@ const Login = () => {
 					if (!!idTokenResult.claims.userId) {
 						history.push('/');
 					} else {
-						showMessage("Creating user...", true, null);
+						showMessage('Creating user...', true, null);
 						fetch(`${process.env.REACT_APP_API_URL}api/users`, {
 							method: 'POST',
 							headers: {
@@ -187,7 +182,11 @@ const Login = () => {
 									return;
 								}
 								const error = await res.json();
-								showMessage(error.toString().length < 50 ? error.toString() : 'Error occurs.');
+								showMessage(
+									error.toString().length < 50
+										? error.toString()
+										: 'Error occurs.'
+								);
 							})
 							.catch((error) => {
 								showMessage('Error occurs.');
@@ -201,7 +200,7 @@ const Login = () => {
 	};
 
 	let snackBarKey = null;
-	const showMessage = (message, success, duration, closable) => {		
+	const showMessage = (message, success, duration, closable) => {
 		setIsSubmitting(false);
 		snackBarKey = enqueueSnackbar(message, {
 			anchorOrigin: {
@@ -210,70 +209,79 @@ const Login = () => {
 			},
 			variant: success ? 'success' : 'error',
 			autoHideDuration: duration === undefined ? 3000 : duration,
-			action: (key) => (
-				closable && 
-				<IconButton onClick={() => closeSnackbar(key)}>
-					<CloseRounded />
-				</IconButton>
-			),
+			action: (key) =>
+				closable && (
+					<IconButton onClick={() => closeSnackbar(key)}>
+						<CloseRounded />
+					</IconButton>
+				),
 		});
 	};
 
 	const onSubmit = (data) => {
 		setIsSubmitting(true);
-		FirebaseAuth.signInWithEmailAndPassword(data.email, data.password)
-			.then((data) => {
-				hanldeSuccessLogin();
-			})
-			.catch((error) => {
-				if (error.code === 'auth/wrong-password') {
-					FirebaseAuth.fetchSignInMethodsForEmail(data.email)
-						.then(function (methods) {
-							// Step 3.
-							// If the user has several sign-in methods,
-							// the first method in the list will be the "recommended" method to use.
-							if (methods && methods.some((x) => x === 'password')) {
-								// Asks the user their password.
-								// In real scenario, you should handle this asynchronously.
-								showMessage(error.message);
-								reset({ email: data.email });
-								return;
-							}
-
-							// All the other cases are external providers.
-							// Construct provider object for that provider.
-							const provider = getProviderById(methods[0]);
-							const credential = getEmailCredential(data.email, data.password);
-							FirebaseAuth.signInWithPopup(provider)
-								.then(function (result) {
-									// Remember that the user may have signed in with an account that has a different email
-									// address than the first one. This can happen as Firebase doesn't control the provider's
-									// sign in flow and the user is free to login using whichever account they own.
-									// Step 4b.
-									// Link to Google credential.
-									// As we have access to the pending credential, we can directly call the link method.
-									result.user
-										.linkWithCredential(credential)
-										.then(function (usercred) {
-											// Google account successfully linked to the existing Firebase user.
-											hanldeSuccessLogin();
-										})
-										.catch((error) => {
-											showMessage(error.message);
-										});
-								})
-								.catch((error) => {
+		FirebaseAuth.setPersistence(
+			data.remember
+				? FirebasePersistence.LOCAL
+				: FirebasePersistence.SESSION
+		).then(() => {
+			FirebaseAuth.signInWithEmailAndPassword(data.email, data.password)
+				.then((data) => {
+					hanldeSuccessLogin();
+				})
+				.catch((error) => {
+					if (error.code === 'auth/wrong-password') {
+						FirebaseAuth.fetchSignInMethodsForEmail(data.email)
+							.then(function (methods) {
+								// Step 3.
+								// If the user has several sign-in methods,
+								// the first method in the list will be the "recommended" method to use.
+								if (methods && methods.some((x) => x === 'password')) {
+									// Asks the user their password.
+									// In real scenario, you should handle this asynchronously.
 									showMessage(error.message);
-								});
-						})
-						.catch((error) => {
-							showMessage(error.message);
-						});
-					return;
-				}
+									reset({ email: data.email });
+									return;
+								}
 
-				showMessage(error.message);
-			});
+								// All the other cases are external providers.
+								// Construct provider object for that provider.
+								const provider = getProviderById(methods[0]);
+								const credential = getEmailCredential(
+									data.email,
+									data.password
+								);
+								FirebaseAuth.signInWithPopup(provider)
+									.then(function (result) {
+										// Remember that the user may have signed in with an account that has a different email
+										// address than the first one. This can happen as Firebase doesn't control the provider's
+										// sign in flow and the user is free to login using whichever account they own.
+										// Step 4b.
+										// Link to Google credential.
+										// As we have access to the pending credential, we can directly call the link method.
+										result.user
+											.linkWithCredential(credential)
+											.then(function (usercred) {
+												// Google account successfully linked to the existing Firebase user.
+												hanldeSuccessLogin();
+											})
+											.catch((error) => {
+												showMessage(error.message);
+											});
+									})
+									.catch((error) => {
+										showMessage(error.message);
+									});
+							})
+							.catch((error) => {
+								showMessage(error.message);
+							});
+						return;
+					}
+
+					showMessage(error.message);
+				});
+		});
 	};
 
 	const onSubmitPassword = (data) => {
@@ -471,10 +479,10 @@ const useStyles = makeStyles((theme) => ({
 		margin: 40,
 		marginTop: 10,
 		verticalAlign: 'center',
-	},	
+	},
 	buttonProgress: {
 		color: green[500],
-		marginRight: 10
+		marginRight: 10,
 	},
 }));
 
