@@ -89,7 +89,7 @@ const SidebarNav = (props) => {
 
 	useEffect(() => {
 		if (!!state.currentUser?.uid) {
-			getPlaylists();
+			getPlaylists({ owned: true });
 		}
 		getPlaylists(undefined, true);
 	}, [state.currentUser]);
