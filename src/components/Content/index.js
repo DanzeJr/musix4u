@@ -223,10 +223,6 @@ const Content = () => {
 		<div className={classes.root}>
 			{state.fetching ? (
 				loader
-			) : state.currentPlaylist.length <= 0 ? (
-				<p style={{ position: 'fixed', top: '50%', left: '50%' }}>
-					No track is found!
-				</p>
 			) : (
 				<TableContainer component={Paper} className={classes.tableContainer}>
 					<Table className={classes.table} aria-label='Playlist'>
@@ -251,51 +247,59 @@ const Content = () => {
 								<StyledTableCell align='left'></StyledTableCell>
 							</TableRow>
 						</TableHead>
-						<TableBody>
-							{state.currentPlaylist.map((song) => {
-								return (
-									<StyledTableRow
-										key={song.id}
-										onMouseEnter={() => setPlayVisibleId(song.id)}
-										onMouseLeave={() => setPlayVisibleId('')}
-										onClick={() => playOrPause(song)}>
-										<StyledTableCell component='th' scope='row'>
-											<PlayPause
-												playing={state.playing}
-												song={song}
-												isCurrentSong={state.currentSong.id === song.id}
-												visible={playVisibleId === song.id}
-											/>
-											{!!state.currentUser?.uid && (
-												<>
-													<AddToPlaylist song={song} />
-													<Favorite song={song} />
-												</>
-											)}
-										</StyledTableCell>
-										<StyledTableCell align='left'>{song.title}</StyledTableCell>
-										<StyledTableCell align='left'>
-											{song.performers}
-										</StyledTableCell>
-										<Hidden smDown implementation='js'>
-											<StyledTableCell align='left'>
-												{song.album}
+						{state.currentPlaylist.length <= 0 ? (
+							<p style={{ position: 'fixed', top: '50%', left: '50%' }}>
+								No track is found!
+							</p>
+						) : (
+							<TableBody>
+								{state.currentPlaylist.map((song) => {
+									return (
+										<StyledTableRow
+											key={song.id}
+											onMouseEnter={() => setPlayVisibleId(song.id)}
+											onMouseLeave={() => setPlayVisibleId('')}
+											onClick={() => playOrPause(song)}>
+											<StyledTableCell component='th' scope='row'>
+												<PlayPause
+													playing={state.playing}
+													song={song}
+													isCurrentSong={state.currentSong.id === song.id}
+													visible={playVisibleId === song.id}
+												/>
+												{!!state.currentUser?.uid && (
+													<>
+														<AddToPlaylist song={song} />
+														<Favorite song={song} />
+													</>
+												)}
 											</StyledTableCell>
-										</Hidden>
-										<StyledTableCell align='left'>
-											{millisToFormattedTime(song.duration)}
-										</StyledTableCell>
-										<StyledTableCell>
-											{(!isNaN(state.currentPlaylistId) ||
-												state.currentPlaylistId == 'fav' ||
-												state.claims.userId == song.uploaderId) && (
-												<TrackOption song={song} />
-											)}
-										</StyledTableCell>
-									</StyledTableRow>
-								);
-							})}
-						</TableBody>
+											<StyledTableCell align='left'>
+												{song.title}
+											</StyledTableCell>
+											<StyledTableCell align='left'>
+												{song.performers}
+											</StyledTableCell>
+											<Hidden smDown implementation='js'>
+												<StyledTableCell align='left'>
+													{song.album}
+												</StyledTableCell>
+											</Hidden>
+											<StyledTableCell align='left'>
+												{millisToFormattedTime(song.duration)}
+											</StyledTableCell>
+											<StyledTableCell>
+												{(!isNaN(state.currentPlaylistId) ||
+													state.currentPlaylistId == 'fav' ||
+													state.claims.userId == song.uploaderId) && (
+													<TrackOption song={song} />
+												)}
+											</StyledTableCell>
+										</StyledTableRow>
+									);
+								})}
+							</TableBody>
+						)}
 					</Table>
 				</TableContainer>
 			)}
@@ -562,9 +566,7 @@ const PlaylistOption = () => {
 					<ListItemIcon>
 						<DeleteForeverRounded fontSize='small' color='error' />
 					</ListItemIcon>
-					<ListItemText
-						primary='Delete playlist'
-					/>
+					<ListItemText primary='Delete playlist' />
 				</MenuItem>
 			</Menu>
 			<Dialog
