@@ -11,6 +11,7 @@ import HeaderSearch from './AppHeaderSearch';
 import HeaderNotifications from './AppHeaderNotifications';
 import HeaderProfile from './AppHeaderProfile';
 import HeaderUpload from './AppHeaderUpload';
+import HeaderNewPlaylist from './AppHeaderNewPlaylist'
 import { useEffect } from 'react';
 import { FirebaseAuth } from './../../services/Firebase/index';
 import { StoreContext } from '../../App';
@@ -31,8 +32,8 @@ const AppHeader = ({ onToggleClick }) => {
 				</IconButton>
 				<HeaderSearch />
 				<div className={classes.actions}>
+					{!!state.claims.userId && <HeaderNewPlaylist />}
 					{!!state.claims.userId && <HeaderUpload />}
-					<HeaderNotifications />
 					<HeaderProfile />
 				</div>
 			</Toolbar>

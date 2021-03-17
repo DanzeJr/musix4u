@@ -30,6 +30,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { useSnackbar } from 'notistack';
 import { green } from '@material-ui/core/colors';
+import { IconButton } from '@material-ui/core';
+import { CloseRounded } from '@material-ui/icons';
 
 const Login = () => {
 	const classes = useStyles();
@@ -167,7 +169,7 @@ const Login = () => {
 					if (!!idTokenResult.claims.userId) {
 						history.push('/');
 					} else {
-						showMessage("Creating user...", true)
+						showMessage("Creating user...", true, null);
 						fetch(`${process.env.REACT_APP_API_URL}api/users`, {
 							method: 'POST',
 							headers: {
@@ -178,6 +180,7 @@ const Login = () => {
 							body: JSON.stringify({}),
 						})
 							.then(async (res) => {
+								closeSnackbar(snackBarKey);
 								if (res.status === 201) {
 									FirebaseAuth.currentUser.getIdToken(true);
 									history.push('/');
@@ -197,12 +200,22 @@ const Login = () => {
 		}
 	};
 
-	const showMessage = (message, success, duration, action) => {		
+	let snackBarKey = null;
+	const showMessage = (message, success, duration, closable) => {		
 		setIsSubmitting(false);
-		enqueueSnackbar(message, {
+		snackBarKey = enqueueSnackbar(message, {
+			anchorOrigin: {
+				vertical: 'top',
+				horizontal: 'left',
+			},
 			variant: success ? 'success' : 'error',
-			autoHideDuration: duration ?? 3000,
-			onClick: action ?? closeSnackbar(),
+			autoHideDuration: duration === undefined ? 3000 : duration,
+			action: (key) => (
+				closable && 
+				<IconButton onClick={() => closeSnackbar(key)}>
+					<CloseRounded />
+				</IconButton>
+			),
 		});
 	};
 

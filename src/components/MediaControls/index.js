@@ -36,6 +36,7 @@ const useStyles = makeStyles((theme) =>
 			width: "45px",
 		},
 		hover: {
+			color: theme.palette.secondary.main,
 			"&:hover": {
 				backgroundColor: "#ffffff11",
 			},
@@ -102,7 +103,6 @@ const MediaControls = () => {
 	return (
 		<div className={classes.root}>
 			<IconButton
-				color='secondary'
 				size='small'
 				onClick={shuffle}
 				className={classes.hover}
@@ -110,7 +110,6 @@ const MediaControls = () => {
 				<ShuffleRounded color={state.shuffle ? "secondary" : "disabled"} fontSize='large' />
 			</IconButton>
 			<IconButton
-				color='secondary'
 				size='small'
 				onClick={prev}
 				className={classes.hover}
@@ -118,7 +117,6 @@ const MediaControls = () => {
 				<SkipPreviousRounded fontSize='large' />
 			</IconButton>
 			<IconButton
-				color='secondary'
 				size='small'
 				onClick={back}
 				className={classes.hover}
@@ -127,7 +125,6 @@ const MediaControls = () => {
 			</IconButton>
 			{state.playing ? (
 				<IconButton
-					color='secondary'
 					size='small'
 					onClick={pause}
 					className={classes.hover}
@@ -136,7 +133,6 @@ const MediaControls = () => {
 				</IconButton>
 			) : (
 				<IconButton
-					color='secondary'
 					size='small'
 					onClick={play}
 					className={classes.hover}
@@ -145,7 +141,6 @@ const MediaControls = () => {
 				</IconButton>
 			)}
 			<IconButton
-				color='secondary'
 				size='small'
 				onClick={forward}
 				className={classes.hover}
@@ -153,7 +148,6 @@ const MediaControls = () => {
 				<Forward10Rounded fontSize='large' />
 			</IconButton>
 			<IconButton
-				color='secondary'
 				size='small'
 				onClick={next}
 				className={classes.hover}
@@ -161,7 +155,6 @@ const MediaControls = () => {
 				<SkipNextRounded fontSize='large' />
 			</IconButton>
 			<IconButton
-				color="secondary"
 				size='small'
 				onClick={repeat}
 				className={classes.hover}

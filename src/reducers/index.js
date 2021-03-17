@@ -8,19 +8,18 @@ import {
 	repeat,
 	shuffle,
 	getTracks,
+	addToPlaylist,
 } from '../utils/player.util';
 
 const DEFAULT_PLAYLIST = 'home';
 const DEFAULT_VOLUME = 50;
 
 export const initialState = {
-	media: [],
+	sharedPlaylists: [],
 	playlists: [],
 	currentPlaylistId: DEFAULT_PLAYLIST,
 	currentPlaylist: [],
-	currentSong: {
-		index: 0
-	},
+	currentSong: {},
 	currentTime: 0,
 	seekingTime: 0,
 	duration: 0,
@@ -36,11 +35,26 @@ export const initialState = {
 
 export const reducer = (state, action) => {
 	switch (action.type) {
+		case 'RESET': {
+			return {
+				...state,
+				playlists: [],
+				currentPlaylist: [],
+				currentSong: {},
+				currentPlaylistId: DEFAULT_PLAYLIST,
+				playing: false,
+				currentTime: 0,
+			};
+		}
 		case 'SET_CLAIMS': {
 			return { ...state, claims: action.claims };
 		}
 		case 'SET_USER': {
-			return { ...state, currentUser: action.user };
+			return {
+				...state,
+				currentUser: action.user,
+				displayName: action.user.displayName,
+			};
 		}
 		case 'LOAD': {
 			return { ...state, loading: action.loading ?? true };
@@ -51,19 +65,65 @@ export const reducer = (state, action) => {
 		case 'GET': {
 			return getTracks(state, action.media);
 		}
+		case 'SET_PLAYLISTS': {
+			return { ...state, playlists: action.playlists };
+		}
+		case 'SET_SHARED_PLAYLISTS': {
+			return { ...state, sharedPlaylists: action.playlists };
+		}
+		case 'SET_CURRENT_PLAYLIST': {
+			return { ...state, currentPlaylistId: action.id };
+		}
 		case 'ADD_PLAYLIST':
 			return {
 				...state,
-				playlists: [...state.playlists, action.id ],
+				playlists: [...state.playlists, action.playlist],
 			};
-		case 'ADD_TO_PLAYLIST':
-			return { ...state, currentPlaylist: [...state.currentPlaylist, action.song] };
-		case 'ABORT_ADD_TO_PLAYLIST':
-			return { ...state, addToPlaylistId: '' };
-		case 'ADD_FAVORITE':
+		case 'ADD_TO_PLAYLIST': {
+			return addToPlaylist(state, action.song);
+		}
+		case 'ADD_FAV': {
+			const song = state.currentPlaylist.find((x) => x.id === action.song.id);
+			song.isFavorite = true;
 			return { ...state };
+		}
+		case 'REMOVE_FAV': {
+			if (state.currentPlaylistId === 'fav') {
+				state.currentPlaylist = state.currentPlaylist.filter(
+					(x) => x.id !== action.id
+				);
+				return { ...state, currentPlaylist: state.currentPlaylist };
+			}
+			const song = state.currentPlaylist.find((x) => x.id === action.id);
+			song.isFavorite = false;
+
+			return { ...state };
+		}
+		case 'UPDATE_TRACK': {
+			const index = state.currentPlaylist.findIndex(
+				(x) => x.id == action.song.id
+			);
+			state.currentPlaylist[index] = action.song;
+			if (state.currentSong?.id === action.song.id) {
+				state.currentSong.title = action.song.title;
+			}
+			return {
+				...state,
+				currentPlaylist: [...state.currentPlaylist],
+				currentSong: { ...state.currentSong },
+			};
+		}
+		case 'REMOVE_TRACK': {
+			state.currentPlaylist = state.currentPlaylist.filter(
+				(x) => x.id !== action.id
+			);
+			return { ...state };
+		}
+		case 'UPDATE_USER': {
+			return { ...state, displayName: action.user.name };
+		}
 		case 'PLAY':
-			return play(state, action.song, action.index);
+			return play(state, action.song);
 		case 'PAUSE':
 			return pause(state);
 		case 'NEXT':
@@ -79,8 +139,6 @@ export const reducer = (state, action) => {
 		case 'SHUFFLE': {
 			return shuffle(state);
 		}
-		case 'REMOVE_FAVORITE':
-			return { ...state };
 		case 'SAVE_TO_PLAYLIST':
 			return { ...state, addToPlaylistId: '' };
 		case 'SET_CURRENT_TIME': {

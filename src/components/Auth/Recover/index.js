@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { makeStyles, Button, TextField, Link, Grid, CircularProgress } from '@material-ui/core';
+import { makeStyles, Button, TextField, Link, Grid, CircularProgress, IconButton } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
@@ -8,6 +8,7 @@ import AuthHeader from '../AuthHeader';
 import { FirebaseAuth } from '../../../services/Firebase';
 import { useSnackbar } from 'notistack';
 import { green } from '@material-ui/core/colors';
+import { CloseRounded } from '@material-ui/icons';
 
 const Recover = () => {
 	const classes = useStyles();
@@ -28,12 +29,20 @@ const Recover = () => {
 		}
 	}, []);
 
-	const showMessage = (message, success, duration, action) => {
+	const showMessage = (message, success, duration) => {
 		setIsSubmitting(false);
 		enqueueSnackbar(message, {
+			anchorOrigin: {
+				vertical: 'top',
+				horizontal: 'left',
+			},
 			variant: success ? 'success' : 'error',
-			autoHideDuration: duration ?? 3000,
-			onClick: action ?? closeSnackbar(),
+			autoHideDuration: duration === undefined ? 3000 : duration,
+			action: (key) => (
+				<IconButton onClick={() => closeSnackbar(key)}>
+					<CloseRounded />
+				</IconButton>
+			),
 		});
 	};
 

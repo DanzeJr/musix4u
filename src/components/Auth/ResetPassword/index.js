@@ -6,6 +6,7 @@ import {
 	Link,
 	Grid,
 	CircularProgress,
+	IconButton,
 } from '@material-ui/core';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -17,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { FirebaseAuth } from '../../../services/Firebase';
 import { useLoading, Puff } from '@agney/react-loading';
 import { green } from '@material-ui/core/colors';
+import { CloseRounded } from '@material-ui/icons';
 
 const ResetPassword = () => {
 	const classes = useStyles();
@@ -66,13 +68,23 @@ const ResetPassword = () => {
 			});
 	}, []);
 
-	const showMessage = (message, success, duration, action) => {
+	const showMessage = (message, success, duration) => {
 		setIsSubmitting(false);
-		enqueueSnackbar(message, {
+		const key = enqueueSnackbar(message, {
+			anchorOrigin: {
+				vertical: 'top',
+				horizontal: 'left',
+			},
 			variant: success ? 'success' : 'error',
-			autoHideDuration: duration === undefined ?? 3000,
-			onClick: action ?? closeSnackbar(),
+			autoHideDuration: duration === undefined ? 3000 : duration,
+			action: (key) => (
+				<IconButton onClick={() => closeSnackbar(key)}>
+					<CloseRounded />
+				</IconButton>
+			),
 		});
+
+		return key;
 	};
 
 	const onSubmit = (data) => {

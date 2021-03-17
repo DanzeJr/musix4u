@@ -4,10 +4,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import {
+	Add,
 	CancelRounded,
-	Close,
 	CloseRounded,
-	CloudUploadRounded,
+	PlaylistAdd,
 } from '@material-ui/icons';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -23,33 +23,25 @@ import {
 } from '@material-ui/core';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { StoreContext } from './../../App';
+import { StoreContext } from '../../App';
 
-const AppHeaderUpload = () => {
+const AppHeaderNewPlaylist = () => {
 	const classes = useStyles();
 	const { state, dispatch } = useContext(StoreContext);
 	const [open, setOpen] = React.useState(false);
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 	const schema = yup.object().shape({
-		song: yup
+		name: yup
 			.mixed()
-			.required('Please choose a song')
-			.test('single', 'Please select only one file', (value) => {
-				return !!value && value.length === 1;
-			})
-			.test('fileSzie', 'File size exceed 10MB', (value) => {
-				return !!value && value[0].size <= 10 * 1280 * 1280;
-			})
-			.test('type', 'Only support mp3, m4a or flac file type', (value) => {
-				const type = value[0].type;
-				return (
-					!!value &&
-					(type === 'audio/mpeg' ||
-						type === 'audio/flac' ||
-						type === 'audio/x-m4a')
-				);
-			}),
+			.required('Please enter playlist name')
+			.test(
+				'maxLength',
+				'Must be less than or equal to 50 characters',
+				(value) => {
+					return value && value.toString().length <= 50;
+				}
+			),
 	});
 	const { register, handleSubmit, errors, reset, control } = useForm({
 		mode: 'onChange',
@@ -90,40 +82,26 @@ const AppHeaderUpload = () => {
 
 	const onSubmit = async (data) => {
 		setIsSubmitting(true);
-		const formData = new FormData();
-		for (const key in data) {
-			if (key !== 'song') {
-				formData.append(key, data[key]);
-			} else {
-				formData.append(key, data[key][0]);
-			}
-		}
-		if (!isNaN(state.currentPlaylistId)) {
-			formData.append('playlistId', state.currentPlaylistId);
-		} else if (state.currentPlaylistId === 'fav') {
-			formData.append('isFavorite', true);			
-		}
 		const token = await state.currentUser.getIdToken(true).catch((error) => {
 			showMessage(error.message);
 		});
-		fetch(`${process.env.REACT_APP_API_URL}api/tracks`, {
+		fetch(`${process.env.REACT_APP_API_URL}api/playlists`, {
 			method: 'POST',
 			headers: {
 				Accept: 'application/json',
+				'Content-Type': 'application/json;charset=UTF-8',
 				Authorization: `Bearer ${token}`,
 			},
-			body: formData,
+			body: JSON.stringify(data),
 		})
 			.then(async (res) => {
 				if (res.status === 201) {
 					setIsSubmitting(false);
-					const song = await res.json();
-					dispatch({ type: 'ADD_TO_PLAYLIST', song });
-					showMessage(
-						`Upload new song ${data.song[0].name} successfully!`,
-						true
-					);
+					const playlist = await res.json();
+					dispatch({ type: 'ADD_PLAYLIST', playlist });
+					showMessage(`Add new playlist ${data.name} successfully!`, true);
 					reset();
+					handleClose();
 					return;
 				}
 				const error = await res.json();
@@ -135,18 +113,20 @@ const AppHeaderUpload = () => {
 	};
 
 	return (
-		<div className={classes.headerUpload}>
-			<IconButton
+		<div className={classes.root}>
+			<Button
 				edge='start'
 				color='inherit'
-				aria-label='Upload'
+				variant='outlined'
+				aria-label='New Playlist'
 				className={classes.button}
-				aria-controls='HeaderUpload'
-				title='Upload song'
+				aria-controls='NewPlaylist'
+				title='New playlist'
 				size='medium'
+				startIcon={<Add />}
 				onClick={handleClickOpen}>
-				<CloudUploadRounded />
-			</IconButton>
+				<span className={classes.buttonText}>New Playlist</span>
+			</Button>
 			<Dialog
 				open={open}
 				onClose={handleClose}
@@ -154,13 +134,13 @@ const AppHeaderUpload = () => {
 				disableBackdropClick
 				disableEscapeKeyDown>
 				<div className={classes.titleContainer}>
-					<h2 style={{ marginLeft: 20 }}>Upload song</h2>
+					<h2 style={{ marginLeft: 20 }}>New Playlist</h2>
 					<IconButton
 						edge='start'
 						color='inherit'
 						aria-label='Cancel'
 						className={classes.cancel}
-						title='Cancel Upload'
+						title='Cancel'
 						onClick={handleClose}>
 						<CancelRounded fontSize='large' />
 					</IconButton>
@@ -168,47 +148,16 @@ const AppHeaderUpload = () => {
 				<form onSubmit={handleSubmit(onSubmit)} noValidate>
 					<DialogContent>
 						<TextField
-							id='song'
-							name='song'
+							margin='dense'
+							id='name'
+							name='name'
+							label='Name'
 							variant='outlined'
 							fullWidth
-							type='file'
 							inputRef={register}
-							error={!!errors.song}
-							helperText={errors.song && errors.song.message}
+							error={!!errors.name}
+							helperText={errors.name && errors.name.message}
 						/>
-						<TextField
-							margin='dense'
-							id='title'
-							name='title'
-							label='Title'
-							fullWidth
-							inputRef={register}
-							error={!!errors.title}
-							helperText={errors.title && errors.title.message}
-						/>
-						<TextField
-							margin='dense'
-							id='artists'
-							name='artists'
-							label='Artists'
-							fullWidth
-							inputRef={register}
-							error={!!errors.artists}
-							helperText={errors.artists && errors.artists.message}
-						/>
-						<TextField
-							margin='dense'
-							id='album'
-							name='album'
-							label='Album'
-							fullWidth
-							inputRef={register}
-							error={!!errors.album}
-							helperText={errors.album && errors.album.message}
-						/>
-					</DialogContent>
-					<DialogActions>
 						<FormControlLabel
 							control={
 								<Controller
@@ -227,8 +176,10 @@ const AppHeaderUpload = () => {
 									)}
 								/>
 							}
-							label='Public song'
+							label='Public Playlist'
 						/>
+					</DialogContent>
+					<DialogActions>
 						<Button
 							type='submit'
 							variant='contained'
@@ -239,11 +190,11 @@ const AppHeaderUpload = () => {
 										className={classes.buttonProgress}
 									/>
 								) : (
-									<CloudUploadRounded />
+									<PlaylistAdd />
 								)
 							}
 							disabled={isSubmitting}>
-							Upload
+							Add
 						</Button>
 					</DialogActions>
 				</form>
@@ -253,10 +204,25 @@ const AppHeaderUpload = () => {
 };
 
 const useStyles = makeStyles((theme) => ({
-	headerUpload: {
+	root: {
 		marginRight: 23,
-		// position: 'relative',
-		// position: 'absolute'
+		minWidth: '40%',
+	},
+	button: {
+		margin: theme.spacing(1),
+		[theme.breakpoints.down('sm')]: {
+			minWidth: 32,
+			paddingLeft: 8,
+			paddingRight: 8,
+			'& .MuiButton-startIcon': {
+				margin: 0,
+			},
+		},
+	},
+	buttonText: {
+		[theme.breakpoints.down('sm')]: {
+			display: 'none',
+		},
 	},
 	titleContainer: {
 		display: 'flex',
@@ -273,4 +239,4 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default AppHeaderUpload;
+export default AppHeaderNewPlaylist;

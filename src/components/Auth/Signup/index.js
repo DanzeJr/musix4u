@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { makeStyles, Grid, Link, TextField, Button, CircularProgress } from '@material-ui/core';
-import { Link as RouterLink, useParams, useHistory } from 'react-router-dom';
+import { makeStyles, Grid, Link, TextField, Button, CircularProgress, IconButton } from '@material-ui/core';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { useForm } from 'react-hook-form';
@@ -14,6 +14,7 @@ import {
 } from './../../../services/Firebase';
 import { useSnackbar } from 'notistack';
 import { green } from '@material-ui/core/colors';
+import { CloseRounded } from '@material-ui/icons';
 
 const SignUp = () => {
 	const classes = useStyles();
@@ -45,13 +46,13 @@ const SignUp = () => {
 						// if not register on backend server
 						if (!!idTokenResult.claims.userId) {
 							FirebaseAuth.signOut();
-							showMessage(
+							const key = showMessage(
 								'Account already exists. Try to login instead.',
 								false,
 								3000,
 								() => {
 									history.push(`/auth/login`);
-									closeSnackbar();
+									closeSnackbar(key);
 								}
 							);
 							return;
@@ -68,10 +69,13 @@ const SignUp = () => {
 								.then(async (res) => {
 									if (res.status === 201) {
 										FirebaseAuth.signOut();
-										showMessage(
+										const key = showMessage(
 											'Registration successfully. Try to login now!',
 											true,
-											() => history.push('/auth/login')
+											() => {
+												history.push('/auth/login')
+												closeSnackbar(key);
+											}
 										);
 										return;
 									}
@@ -95,7 +99,7 @@ const SignUp = () => {
 			.catch((error) => {
 				if (error.code === 'auth/account-exists-with-different-credential') {
 					showMessage(
-						'Account already exists. Please try to login by another method.'
+						'Account already exists. Please try to login by another method'
 					);
 					return;
 				}
@@ -108,11 +112,21 @@ const SignUp = () => {
 		if (!success && typeof message === 'object') {
 			message = 'Error occurs';
 		}
-		enqueueSnackbar(message, {
+		const key = enqueueSnackbar(message, {
+			anchorOrigin: {
+				vertical: 'top',
+				horizontal: 'left',
+			},
 			variant: success ? 'success' : 'error',
-			autoHideDuration: duration ?? 3000,
-			onClick: action ?? closeSnackbar(),
+			autoHideDuration: duration === undefined ? 3000 : duration,
+			action: (key) => (
+				<IconButton onClick={() => closeSnackbar(key)}>
+					<CloseRounded />
+				</IconButton>
+			),
 		});
+
+		return key;
 	};
 
 	const onSubmit = (data) => {

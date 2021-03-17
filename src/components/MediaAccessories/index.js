@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme) =>
 			flexDirection: 'column',
 		},
 		hover: {
+			color: theme.palette.secondary.main,
 			'&:hover': {
 				backgroundColor: '#ffffff11',
 			},
@@ -120,7 +121,6 @@ const MediaAccessories = () => {
 		<div className={`${classes.root} ${classes.verticallyCenter}`}>
 			<div className={classes.accessories}>
 				<IconButton
-					color='secondary'
 					size='small'
 					onClick={() => changeVolume(null, state.volume === 0 ? 100 : 0)}
 					className={classes.hover}
@@ -146,7 +146,6 @@ const MediaAccessories = () => {
 					<Tooltip title='Download this song' placement='top'>
 						<a href={song.url} target='_blank' rel='noopener noreferrer'>
 							<IconButton
-								color='secondary'
 								className={classes.hover}
 								title='Download this song'>
 								<CloudDownloadRounded />

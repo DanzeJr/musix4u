@@ -3,20 +3,28 @@ export const getTracks = (state, media) => {
 	return {
 		...state,
 		fetching: false,
-		currentPlaylist: media.map((song, index) => ({ ...song, index }))
+		currentPlaylist: media
 	};
 };
+
+export const addToPlaylist = (state, song) => {
+	return {
+		...state,
+		currentPlaylist: [ song, ...state.currentPlaylist ]
+	};
+};
+
 export const play = (state, song) => {
 	if (state.currentPlaylist.length === 0) {
 		return state;
 	}
-	if (!song) {
-		song =state.currentPlaylist[state.currentSong.index];
+	if (!song && !state.currentSong.name) {
+		state.currentSong = state.currentPlaylist[0];
 	}
 	return {
 		...state,
 		playing: true,
-		currentSong: song || state.currentSong
+		currentSong: song ?? state.currentSong
 	};
 };
 
@@ -57,20 +65,24 @@ export const next = (state) => {
 		return state;
 	}
 	let index;
+	let currentIndex = state.currentPlaylist.indexOf(state.currentSong);
+	if (currentIndex < 0) {
+		currentIndex = 0;
+	}
 	if (state.shuffle) {
 		do {
 			index = random(0, length - 1);
-		} while (index === state.currentSong.index);
+		} while (index === currentIndex);
 	} else {
-		if (state.currentSong.index < length - 1) {
-			index = state.currentSong.index + 1;
+		if (currentIndex < length - 1) {
+			index = currentIndex + 1;
 		} else {
 			index = 0;
 		}
 	}
 
 	let song =state.currentPlaylist[index];
-	return play(state, song, index);
+	return play(state, song);
 };
 
 /**
@@ -85,20 +97,24 @@ export const prev = (state) => {
 		return state;
 	}
 	let index;
+	let currentIndex = state.currentPlaylist.indexOf(state.currentSong);
+	if (currentIndex < 0) {
+		currentIndex = 0;
+	}
 	if (state.shuffle) {
 		do {
 			index = random(0, length - 1);
-		} while (index === state.currentSong.index);
+		} while (index === currentIndex);
 	} else {
-		if (state.currentSong.index > 0) {
-			index = state.currentSong.index - 1;
+		if (currentIndex > 0) {
+			index = currentIndex- 1;
 		} else {
 			index = length - 1;
 		}
 	}
 
 	let song =state.currentPlaylist[index];
-	return play(state, song, index);
+	return play(state, song);
 };
 
 /**
