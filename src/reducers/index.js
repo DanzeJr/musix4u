@@ -91,8 +91,12 @@ export const reducer = (state, action) => {
 			index = state.sharedPlaylists.findIndex(
 				(x) => x.id == action.playlist.id
 			);
-			if (index >= 0) {
-				state.sharedPlaylists[index] = action.playlist;
+			if (index >= 0) {				
+				if (action.playlist.isPublic) {
+					state.sharedPlaylists[index] = action.playlist;
+				} else {
+					state.sharedPlaylists = state.sharedPlaylists.filter(x => x.id != action.playlist.id);
+				}
 			}
 			return {
 				...state,
