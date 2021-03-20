@@ -1,16 +1,15 @@
-
 export const getTracks = (state, media) => {
 	return {
 		...state,
 		fetching: false,
-		currentPlaylist: media
+		currentPlaylist: media,
 	};
 };
 
 export const addToPlaylist = (state, song) => {
 	return {
 		...state,
-		currentPlaylist: [ song, ...state.currentPlaylist ]
+		currentPlaylist: [song, ...state.currentPlaylist],
 	};
 };
 
@@ -24,7 +23,7 @@ export const play = (state, song) => {
 	return {
 		...state,
 		playing: true,
-		currentSong: song ?? state.currentSong
+		currentSong: song ?? state.currentSong,
 	};
 };
 
@@ -59,7 +58,7 @@ const random = (lower, upper) => {
  * @param state PlayerState
  * @returns PlayerState
  */
-export const next = (state) => {	
+export const next = (state) => {
 	const length = state.currentPlaylist.length;
 	if (length === 0) {
 		return state;
@@ -72,10 +71,11 @@ export const next = (state) => {
 	if (state.shuffle) {
 		if (length === 1) {
 			index = currentIndex;
+		} else {
+			do {
+				index = random(0, length - 1);
+			} while (index === currentIndex);
 		}
-		do {
-			index = random(0, length - 1);
-		} while (index === currentIndex);
 	} else {
 		if (currentIndex < length - 1) {
 			index = currentIndex + 1;
@@ -84,7 +84,7 @@ export const next = (state) => {
 		}
 	}
 
-	let song =state.currentPlaylist[index];
+	let song = state.currentPlaylist[index];
 	return play(state, song);
 };
 
@@ -94,7 +94,7 @@ export const next = (state) => {
  * @param state PlayerState
  * @returns PlayerState
  */
-export const prev = (state) => {	
+export const prev = (state) => {
 	const length = state.currentPlaylist.length;
 	if (length === 0) {
 		return state;
@@ -107,19 +107,20 @@ export const prev = (state) => {
 	if (state.shuffle) {
 		if (length === 1) {
 			index = currentIndex;
+		} else {
+			do {
+				index = random(0, length - 1);
+			} while (index === currentIndex);
 		}
-		do {
-			index = random(0, length - 1);
-		} while (index === currentIndex);
 	} else {
 		if (currentIndex > 0) {
-			index = currentIndex- 1;
+			index = currentIndex - 1;
 		} else {
 			index = length - 1;
 		}
 	}
 
-	let song =state.currentPlaylist[index];
+	let song = state.currentPlaylist[index];
 	return play(state, song);
 };
 
