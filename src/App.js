@@ -44,6 +44,7 @@ const App = () => {
 					<Switch>
 						<Route path='/auth' component={Auth} />
 						<Route exact path='/' component={Home} />
+						<Route path='/community/:id' component={Home} />
 						<Route path='/playlists/:id' component={Home} />
 						<Route path='/playlists' component={Home} />
 					</Switch>

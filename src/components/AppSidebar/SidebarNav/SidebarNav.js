@@ -119,7 +119,7 @@ const SidebarNav = (props) => {
 	useEffect(() => {
 		const playlists = state.sharedPlaylists.map((x) => ({
 			name: x.name,
-			link: `/playlists/${x.id}`,
+			link: `/community/${x.id}`,
 		}));
 		items[1].items = [...playlists];
 		setItems([...items]);
