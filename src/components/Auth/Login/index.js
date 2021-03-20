@@ -156,7 +156,6 @@ const Login = () => {
 	};
 
 	const hanldeSuccessLogin = () => {
-		setIsSubmitting(false);
 		if (FirebaseAuth.currentUser) {
 			FirebaseAuth.currentUser
 				.getIdTokenResult()
@@ -202,7 +201,7 @@ const Login = () => {
 
 	let snackBarKey = null;
 	const showMessage = (message, success, duration, closable) => {
-		if (duration != null) {
+		if (duration !== null) {
 			setIsSubmitting(false);
 		}
 		snackBarKey = enqueueSnackbar(message, {
