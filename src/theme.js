@@ -104,7 +104,7 @@ const baseTheme = responsiveFontSizes(createMuiTheme({
 		},
 		secondary: {
 			main: '#ffffff',
-		},
+		}
 	},
 	typography: {
 		fontFamily: 'Signika',

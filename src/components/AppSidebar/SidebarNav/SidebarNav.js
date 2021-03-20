@@ -101,7 +101,7 @@ const SidebarNav = (props) => {
 		}));
 		if (!!state.currentUser?.uid) {
 			items[2] = {
-				name: 'My Playlist',
+				name: 'My Playlists',
 				Icon: PlaylistPlay,
 			};
 

@@ -29,7 +29,7 @@ export const initialState = {
 	fetching: false,
 	loading: true,
 	volume: DEFAULT_VOLUME,
-	currentUser: {},
+	currentUser: null,
 	claims: {},
 };
 
@@ -81,22 +81,26 @@ export const reducer = (state, action) => {
 			return {
 				...state,
 				playlists: [...state.playlists, action.playlist],
-				sharedPlaylists: [...state.sharedPlaylists]
+				sharedPlaylists: [...state.sharedPlaylists],
 			};
 		}
-			
+
 		case 'UPDATE_PLAYLIST': {
 			let index = state.playlists.findIndex((x) => x.id == action.playlist.id);
 			state.playlists[index] = action.playlist;
 			index = state.sharedPlaylists.findIndex(
 				(x) => x.id == action.playlist.id
 			);
-			if (index >= 0) {				
+			if (index >= 0) {
 				if (action.playlist.isPublic) {
 					state.sharedPlaylists[index] = action.playlist;
 				} else {
-					state.sharedPlaylists = state.sharedPlaylists.filter(x => x.id != action.playlist.id);
+					state.sharedPlaylists = state.sharedPlaylists.filter(
+						(x) => x.id != action.playlist.id
+					);
 				}
+			} else if (action.playlist.isPublic) {
+				state.sharedPlaylists.push(action.playlist)
 			}
 			return {
 				...state,
@@ -106,7 +110,9 @@ export const reducer = (state, action) => {
 		}
 		case 'DELETE_PLAYLIST': {
 			state.playlists = state.playlists.filter((x) => x.id != action.id);
-			state.sharedPlaylists = state.sharedPlaylists.filter((x) => x.id != action.id);
+			state.sharedPlaylists = state.sharedPlaylists.filter(
+				(x) => x.id != action.id
+			);
 			return {
 				...state,
 				playlists: [...state.playlists],

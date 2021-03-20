@@ -16,6 +16,7 @@ import {
 	RepeatOneRounded,
 	ShuffleRounded,
 } from "@material-ui/icons";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -41,6 +42,12 @@ const useStyles = makeStyles((theme) =>
 				backgroundColor: "#ffffff11",
 			},
 		},
+		active: {
+			color: theme.palette.secondary.main
+		},
+		inactive: {
+			color: theme.palette.primary.main
+		}
 	})
 );
 
@@ -107,7 +114,7 @@ const MediaControls = () => {
 				onClick={shuffle}
 				className={classes.hover}
 				title='Shuffle'>
-				<ShuffleRounded color={state.shuffle ? "secondary" : "disabled"} fontSize='large' />
+				<ShuffleRounded className={state.shuffle ? classes.active : classes.inactive} fontSize='large' />
 			</IconButton>
 			<IconButton
 				size='small'
@@ -162,7 +169,7 @@ const MediaControls = () => {
 				{state.repeat === 1 ? (
 					<RepeatOneRounded fontSize='large' />
 				) : (
-					<RepeatRounded color={state.repeat === 0 ? "disabled" : "secondary"} fontSize='large' />
+					<RepeatRounded className={state.repeat !== 0 ? classes.active : classes.inactive} fontSize='large' />
 				)}
 			</IconButton>
 		</div>

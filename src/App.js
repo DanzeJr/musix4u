@@ -19,6 +19,11 @@ const App = () => {
 
 	useEffect(() => {
 		FirebaseAuth.onAuthStateChanged((userAuth) => {
+			if (userAuth) {
+				localStorage.setItem('auth', userAuth);
+			} else {
+				localStorage.removeItem('auth');
+			}
 			dispatch({ type: 'SET_USER', user: userAuth });
 		});
 		FirebaseAuth.onIdTokenChanged(async (user) => {

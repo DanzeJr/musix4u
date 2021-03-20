@@ -154,7 +154,6 @@ const Content = () => {
 	};
 
 	const getTracks = async (filter) => {
-		dispatch({ type: 'FETCH' });
 		let headers = {
 			Accept: 'application/json',
 		};
@@ -164,7 +163,6 @@ const Content = () => {
 			});
 			headers['Authorization'] = `Bearer ${token}`;
 		}
-		console.log('start fetch');
 		fetch(
 			`${process.env.REACT_APP_API_URL}api/tracks?${queryString.stringify(
 				filter
@@ -189,25 +187,27 @@ const Content = () => {
 	};
 
 	useEffect(() => {
-		let filter = {};
-		if (!!id) {
-			if (id === 'fav') {
-				filter = { favorite: true };
-				dispatch({ type: 'SET_CURRENT_PLAYLIST', id: 'fav' });
-			} else if (
-				state.playlists.some((x) => x.id == id) ||
-				state.sharedPlaylists.some((x) => x.id == id)
-			) {
-				filter = { playlistId: id };
-				dispatch({ type: 'SET_CURRENT_PLAYLIST', id });
-			} else {
-				history.push('/');
-				dispatch({ type: 'SET_CURRENT_PLAYLIST', id: 'home' });
-				return;
-			}
+		dispatch({ type: 'FETCH' });
+		console.log(id, 113)
+		if (!!localStorage.getItem('auth') && !state.currentUser?.uid) {
+			return;
 		}
+		let filter = {};
+		if (id === 'fav') {
+			filter = { favorite: true };
+			dispatch({ type: 'SET_CURRENT_PLAYLIST', id: 'fav' });
+		} else if (
+			state.playlists.some((x) => x.id == id) ||
+			state.sharedPlaylists.some((x) => x.id == id)
+		) {
+			filter = { playlistId: id };
+			dispatch({ type: 'SET_CURRENT_PLAYLIST', id });
+		} else {
+			dispatch({ type: 'SET_CURRENT_PLAYLIST', id: 'home' });
+		}
+		console.log(id, state.currentUser);
 		getTracks(filter);
-	}, [history.location, state.currentUser]);
+	}, [id, state.currentUser]);
 
 	const playOrPause = (song) => {
 		if (state.currentSong.id === song.id && state.playing) {
@@ -235,7 +235,11 @@ const Content = () => {
 									) ? (
 										<PlaylistOption />
 									) : (
-										<h4>Total: {state.currentPlaylist.length}</h4>
+										<h3>
+											{state.currentPlaylistId === 'fav' ? 'Favorites' : 'Home'}
+											: {state.currentPlaylist.length}
+											{state.currentPlaylist.length < 2 ? ' song' : ' songs'}
+										</h3>
 									)}
 								</StyledTableCell>
 								<StyledTableCell align='left'>Title</StyledTableCell>
@@ -247,13 +251,17 @@ const Content = () => {
 								<StyledTableCell align='left'></StyledTableCell>
 							</TableRow>
 						</TableHead>
-						{state.currentPlaylist.length <= 0 ? (
-							<p style={{ position: 'fixed', top: '50%', left: '50%' }}>
-								No track is found!
-							</p>
-						) : (
-							<TableBody>
-								{state.currentPlaylist.map((song) => {
+						<TableBody>
+							{state.currentPlaylist.length <= 0 ? (
+								<tr>
+									<td colSpan='6'>
+										<h2 style={{ position: 'fixed', top: '50%', left: '50%' }}>
+											No track is found!
+										</h2>
+									</td>
+								</tr>
+							) : (
+								state.currentPlaylist.map((song) => {
 									return (
 										<StyledTableRow
 											key={song.id}
@@ -297,9 +305,9 @@ const Content = () => {
 											</StyledTableCell>
 										</StyledTableRow>
 									);
-								})}
-							</TableBody>
-						)}
+								})
+							)}
+						</TableBody>
 					</Table>
 				</TableContainer>
 			)}
@@ -540,16 +548,19 @@ const PlaylistOption = () => {
 
 	return (
 		<>
-			<span>Total: {state.currentPlaylist.length}</span>
-			<IconButton
-				aria-controls='simple-menu'
-				aria-haspopup='true'
-				className={classes.button}
-				size='small'
-				onClick={handleClick}
-				disabled={isSubmitting}>
-				<MoreVertRounded />
-			</IconButton>
+			<h3>
+				{playlist.name}: {state.currentPlaylist.length}
+				{state.currentPlaylist.length < 2 ? ' song' : ' songs'}
+				<IconButton
+					aria-controls='simple-menu'
+					aria-haspopup='true'
+					className={classes.button}
+					size='small'
+					onClick={handleClick}
+					disabled={isSubmitting}>
+					<MoreVertRounded />
+				</IconButton>
+			</h3>
 			<Menu
 				id='simple-menu'
 				anchorEl={anchorEl}
@@ -703,7 +714,7 @@ const TrackOption = ({ song }) => {
 					.catch((error) => {
 						showMessage(error.message);
 					});
-			} else if (state.currentPlaylist == 'home') {
+			} else if (state.currentPlaylistId == 'home') {
 				fetch(`${process.env.REACT_APP_API_URL}api/tracks/${song.id}`, {
 					method: 'DELETE',
 					headers: {

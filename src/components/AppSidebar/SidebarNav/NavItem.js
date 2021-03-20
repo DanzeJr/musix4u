@@ -16,8 +16,6 @@ import IconExpandMore from '@material-ui/icons/ExpandMore';
 import IconSpacer from '@material-ui/icons/FiberManualRecord';
 
 import NavItemComponent from './NavItemComponent';
-import { Button } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
 
 // ----------------------------------------------------------------------
 
@@ -38,8 +36,7 @@ const NavItemCollapsed = (props) => {
 	const itemsAll = getItemsAll(items);
 	const hasChildrenAndIsActive =
 		hasChildren &&
-		itemsAll.filter((item) => `#${item.link}` === window.location.hash).length >
-			0;
+		itemsAll.some((item) => `${item.link}` === window.location.pathname);
 
 	const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -179,8 +176,7 @@ const NavItemDefault = (props) => {
 	const itemsAll = getItemsAll(items);
 	const hasChildrenAndIsActive =
 		hasChildren &&
-		itemsAll.filter((item) => `#${item.link}` === window.location.hash).length >
-			0;
+		itemsAll.some((item) => `${item.link}` === window.location.pathname);
 	const isOpen = hasChildrenAndIsActive || false;
 	const [open, setOpen] = React.useState(isOpen);
 
@@ -293,11 +289,11 @@ const useStyles = makeStyles((theme) =>
 			position: 'relative',
 			transition: 'background .23s ease',
 			'&.active:not(.open)': {
-				color: theme.palette.secondary.main,
+				color: '#8cd136',
 				// background: 'rgba(0, 0, 0, 0.08)',
 				'& .MuiListItemIcon-root': {
 					// color: '#fff',
-					color: theme.palette.secondary.main,
+					color: '#8cd136',
 				},
 			},
 			'&.open': {

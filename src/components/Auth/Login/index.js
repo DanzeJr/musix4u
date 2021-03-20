@@ -93,6 +93,7 @@ const Login = () => {
 	};
 
 	const signInWithProvider = (provider) => {
+		setIsSubmitting(true);
 		FirebaseAuth.signInWithPopup(provider)
 			.then((res) => {
 				hanldeSuccessLogin();
@@ -201,7 +202,9 @@ const Login = () => {
 
 	let snackBarKey = null;
 	const showMessage = (message, success, duration, closable) => {
-		setIsSubmitting(false);
+		if (duration != null) {
+			setIsSubmitting(false);
+		}
 		snackBarKey = enqueueSnackbar(message, {
 			anchorOrigin: {
 				vertical: 'top',
