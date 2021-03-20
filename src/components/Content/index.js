@@ -188,7 +188,6 @@ const Content = () => {
 
 	useEffect(() => {
 		dispatch({ type: 'FETCH' });
-		console.log(id, 113)
 		if (!!localStorage.getItem('auth') && !state.currentUser?.uid) {
 			return;
 		}
@@ -205,7 +204,6 @@ const Content = () => {
 		} else {
 			dispatch({ type: 'SET_CURRENT_PLAYLIST', id: 'home' });
 		}
-		console.log(id, state.currentUser);
 		getTracks(filter);
 	}, [id, state.currentUser]);
 
