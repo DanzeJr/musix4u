@@ -70,6 +70,9 @@ export const next = (state) => {
 		currentIndex = 0;
 	}
 	if (state.shuffle) {
+		if (length === 1) {
+			index = currentIndex;
+		}
 		do {
 			index = random(0, length - 1);
 		} while (index === currentIndex);
@@ -102,6 +105,9 @@ export const prev = (state) => {
 		currentIndex = 0;
 	}
 	if (state.shuffle) {
+		if (length === 1) {
+			index = currentIndex;
+		}
 		do {
 			index = random(0, length - 1);
 		} while (index === currentIndex);
