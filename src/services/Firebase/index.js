@@ -1,5 +1,11 @@
-import firebase from 'firebase';
-import 'firebase/auth'
+import firebase from 'firebase/app';
+import 'firebase/auth';        // for authentication
+// import 'firebase/storage';     // for storage
+// import 'firebase/database';    // for realtime database
+// import 'firebase/firestore';   // for cloud firestore
+// import 'firebase/messaging';   // for cloud messaging
+// import 'firebase/functions';   // for cloud functions
+
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_FIREBASE_APIKEY,
@@ -14,8 +20,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 export const FirebaseAuth = firebase.auth();
-export const FirebaseMessaging = firebase.messaging();
-export const Firestore = firebase.firestore();
 
 export const FirebasePersistence = firebase.auth.Auth.Persistence;
 

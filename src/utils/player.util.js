@@ -70,7 +70,6 @@ export const next = (state) => {
 	}
 	if (state.shuffle) {
 		if (length === 1) {
-			index = currentIndex;
 			return seek(state, 0);
 		}
 		do {
@@ -106,7 +105,6 @@ export const prev = (state) => {
 	}
 	if (state.shuffle) {
 		if (length === 1) {
-			index = currentIndex;
 			return seek(state, 0);
 		}
 		do {
