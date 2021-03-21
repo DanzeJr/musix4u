@@ -236,7 +236,7 @@ const AppHeaderProfile = () => {
 									id='lastName'
 									label='Last Name'
 									name='lastName'
-									defaultValue={state.displayName?.split(' ')[1]}
+									defaultValue={state.displayName?.split(' ')[1] + (state.displayName?.split(' ')[2] ?? '')}
 									inputRef={register({
 										required: 'Last Name is required',
 										minLength: {
