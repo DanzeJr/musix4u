@@ -5,7 +5,6 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import {
 	CancelRounded,
-	Close,
 	CloseRounded,
 	CloudUploadRounded,
 } from '@material-ui/icons';
@@ -38,8 +37,8 @@ const AppHeaderUpload = () => {
 			.test('single', 'Please select only one file', (value) => {
 				return !!value && value.length === 1;
 			})
-			.test('fileSzie', 'File size exceed 10MB', (value) => {
-				return !!value && value[0].size <= 10 * 1280 * 1280;
+			.test('fileSzie', 'File size exceed 25MB', (value) => {
+				return !!value && value[0].size <= 26214400;
 			})
 			.test('type', 'Only support mp3, m4a or flac file type', (value) => {
 				const type = value[0].type;
@@ -81,6 +80,10 @@ const AppHeaderUpload = () => {
 	};
 
 	const handleClickOpen = () => {
+		if (!isNaN(state.currentPlaylistId) && !state.playlists.some(x => x.id == state.currentPlaylistId)) {
+			showMessage("Please select Home or one of your playlists to upload song");
+			return;
+		}
 		setOpen(true);
 	};
 

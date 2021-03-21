@@ -47,17 +47,9 @@ const AppHeaderProfile = () => {
 	const [open, setOpen] = React.useState(false);
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-	const schema = yup.object().shape({
-		firstName: yup.mixed().required('First Name is required'),
-	});
 	const { register, handleSubmit, errors, reset } = useForm({
 		mode: 'onChange',
-		reValidateMode: 'onChange',
-		resolver: yupResolver(schema),
-		defaultValues: {
-			firstName: state.currentUser?.displayName?.split(' ')[0],
-			lastName: state.currentUser?.displayName?.split(' ')[1]
-		},
+		reValidateMode: 'onChange'
 	});
 
 	const showMessage = (message, success, duration) => {
@@ -224,6 +216,7 @@ const AppHeaderProfile = () => {
 									id='firstName'
 									label='First Name'
 									autoFocus
+									defaultValue={state.displayName?.split(' ')[0]}
 									inputRef={register({
 										required: 'First Name is required',
 										minLength: {
@@ -243,6 +236,7 @@ const AppHeaderProfile = () => {
 									id='lastName'
 									label='Last Name'
 									name='lastName'
+									defaultValue={state.displayName?.split(' ')[1]}
 									inputRef={register({
 										required: 'Last Name is required',
 										minLength: {

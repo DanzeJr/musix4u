@@ -46,6 +46,7 @@ import {
 	DeleteRounded,
 	DeleteForeverRounded,
 	Delete,
+	CloudDownloadRounded,
 } from '@material-ui/icons';
 import { useParams } from 'react-router';
 import { useEffect } from 'react';
@@ -234,7 +235,13 @@ const Content = () => {
 										<PlaylistOption />
 									) : (
 										<h3>
-											{state.currentPlaylistId === 'fav' ? 'Favorites' : 'Home'}
+											{!isNaN(state.currentPlaylistId)
+												? state.sharedPlaylists.find(
+														(x) => x.id == state.currentPlaylistId
+												  )?.name
+												: state.currentPlaylistId === 'fav'
+												? 'Favorites'
+												: 'Home'}
 											: {state.currentPlaylist.length}
 											{state.currentPlaylist.length < 2 ? ' song' : ' songs'}
 										</h3>
@@ -246,6 +253,7 @@ const Content = () => {
 									<StyledTableCell align='left'>Album</StyledTableCell>
 								</Hidden>
 								<StyledTableCell align='left'>Length</StyledTableCell>
+								<StyledTableCell align='left'>Uploader</StyledTableCell>
 								<StyledTableCell align='left'></StyledTableCell>
 							</TableRow>
 						</TableHead>
@@ -295,11 +303,12 @@ const Content = () => {
 												{millisToFormattedTime(song.duration)}
 											</StyledTableCell>
 											<StyledTableCell>
-												{(!isNaN(state.currentPlaylistId) ||
-													state.currentPlaylistId == 'fav' ||
-													state.claims.userId == song.uploaderId) && (
-													<TrackOption song={song} />
-												)}
+												{song.uploaderId == state.claims.userId
+													? state.displayName
+													: song.uploader?.name}
+											</StyledTableCell>
+											<StyledTableCell>
+												<TrackOption song={song} />
 											</StyledTableCell>
 										</StyledTableRow>
 									);
@@ -667,7 +676,7 @@ const TrackOption = ({ song }) => {
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 
-	const { register, handleSubmit, errors, reset, control } = useForm({
+	const { register, handleSubmit, errors, control } = useForm({
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 		defaultValues: {
@@ -758,6 +767,11 @@ const TrackOption = ({ song }) => {
 						showMessage(error.message);
 					});
 			}
+		} else if (mode === 2) {
+			const anchor = document.createElement('a');
+			anchor.href = song.url;
+			anchor.target = '_blank';
+			anchor.click();
 		}
 		setAnchorEl(null);
 	};
@@ -837,27 +851,41 @@ const TrackOption = ({ song }) => {
 				keepMounted
 				open={Boolean(anchorEl)}
 				onClose={handleClose}>
-				<MenuItem key={0} onClick={(e) => handleClose(e, 0)}>
+				{state.claims.userId == song.uploaderId && (
+					<MenuItem key={0} onClick={(e) => handleClose(e, 0)}>
+						<ListItemIcon>
+							<EditRounded fontSize='small' />
+						</ListItemIcon>
+						<ListItemText primary='Edit Track' />
+					</MenuItem>
+				)}
+				{(state.currentPlaylistId === 'fav' ||
+					(state.currentPlaylistId === 'home' &&
+						state.claims.userId == song.uploaderId) ||
+					(!isNaN(state.currentPlaylistId) &&
+						state.playlists.some((x) => x.id == state.currentPlaylistId))) && (
+					<MenuItem key={1} onClick={(e) => handleClose(e, 1)}>
+						<ListItemIcon>
+							{state.currentPlaylistId == 'home' ? (
+								<DeleteForeverRounded fontSize='small' color='error' />
+							) : (
+								<DeleteRounded fontSize='small' />
+							)}
+						</ListItemIcon>
+						<ListItemText
+							primary={
+								state.currentPlaylistId == 'home'
+									? 'Delete track'
+									: 'Remove from playlist'
+							}
+						/>
+					</MenuItem>
+				)}
+				<MenuItem key={2} onClick={(e) => handleClose(e, 2)}>
 					<ListItemIcon>
-						<EditRounded fontSize='small' />
+						<CloudDownloadRounded />
 					</ListItemIcon>
-					<ListItemText primary='Edit Track' />
-				</MenuItem>
-				<MenuItem key={1} onClick={(e) => handleClose(e, 1)}>
-					<ListItemIcon>
-						{state.currentPlaylistId == 'home' ? (
-							<DeleteForeverRounded fontSize='small' color='error' />
-						) : (
-							<DeleteRounded fontSize='small' />
-						)}
-					</ListItemIcon>
-					<ListItemText
-						primary={
-							state.currentPlaylistId == 'home'
-								? 'Delete track'
-								: 'Remove from playlist'
-						}
-					/>
+					<ListItemText primary='Download this song' />
 				</MenuItem>
 			</Menu>
 			<Dialog
